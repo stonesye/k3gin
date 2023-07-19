@@ -6,54 +6,17 @@
 
 package app
 
-import (
-	"k3gin/app/util"
-)
-
 // Injectors from wire.go:
 
-func InitMisson(name string) (util.Mission, error) {
-	player, err := util.NewPlayer(name)
-	if err != nil {
-		return util.Mission{}, err
-	}
-	monster := util.NewMonster()
-	mission := util.NewMission(player, monster)
-	return mission, nil
-}
-
-func InitEndingA(name string) (util.EndingA, error) {
-	player, err := util.NewPlayer(name)
-	if err != nil {
-		return util.EndingA{}, err
-	}
-	monster := util.NewMonster()
-	endingA := util.EndingA{
-		Player:  player,
-		Monster: monster,
-	}
-	return endingA, nil
-}
-
-func InitEndingB(name string) (util.EndingB, error) {
-	player, err := util.NewPlayer(name)
-	if err != nil {
-		return util.EndingB{}, err
-	}
-	monster := util.NewMonster()
-	endingB := util.EndingB{
-		Player:  player,
-		Monster: monster,
-	}
-	return endingB, nil
-}
-
-func BuildInjector() (*DB, func(), error) {
+func BuildInjector() (*Injector, func(), error) {
 	db, cleanup, err := InitGormDB()
 	if err != nil {
 		return nil, nil, err
 	}
-	return db, func() {
+	injector := &Injector{
+		DB: db,
+	}
+	return injector, func() {
 		cleanup()
 	}, nil
 }

@@ -59,8 +59,23 @@ func (e EndingB) Appear() {
 	fmt.Printf("%s defeats %s, but become monster, world darker!\n", e.Player.Name, e.Monster.Name)
 }
 
+type Person struct {
+	Name string
+	Age  int
+}
+
+type PersonI interface {
+	GetName() string
+}
+
+func (p Person) GetName() string {
+	return p.Name
+}
+
+var PSet = wire.NewSet(wire.Struct(new(Person), "*"), wire.Bind(new(PersonI), new(Person)))
+
+/**
 var EndingASet = wire.NewSet(MPset, wire.Struct(new(EndingA), "*"))
 var EndingBSet = wire.NewSet(MPset, wire.Struct(new(EndingB), "*"))
-
-type User struct {
-}
+var MissionSet = wire.NewSet(wire.Struct(new(Mission), "*"))
+*/

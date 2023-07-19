@@ -3,28 +3,20 @@
 
 package app
 
-import (
-	"github.com/google/wire"
-	. "k3gin/app/util"
-)
+import "github.com/google/wire"
 
-func InitMisson(name string) (Mission, error) {
-	wire.Build(NewMonster, NewPlayer, NewMission)
+/**
+func TestInjector(name string, age int) (*util.Person, func(), error) {
+	wire.Build(util.PSet)
 
-	return Mission{}, nil
+	return new(util.Person), nil, nil
 }
+*/
 
-func InitEndingA(name string) (EndingA, error) {
-	wire.Build(EndingASet)
-	return EndingA{}, nil
-}
-
-func InitEndingB(name string) (EndingB, error) {
-	wire.Build(EndingBSet)
-	return EndingB{}, nil
-}
-
-func BuildInjector() (*DB, func(), error) {
-	wire.Build(InitGormDB)
-	return &DB{}, nil, nil
+func BuildInjector() (*Injector, func(), error) {
+	wire.Build(
+		InitGormDB,
+		InjectorSet,
+	)
+	return new(Injector), nil, nil
 }

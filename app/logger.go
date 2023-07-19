@@ -156,27 +156,27 @@ func WithContext(ctx context.Context) *Entry {
 func InitLogger() (func(), error) {
 	c := config.C.Log
 
-	SetLevel(Level(c.Level))
-	SetFormatter(c.Format)
+	SetLevel(Level(c.Level)) // 设置日志等级
+	SetFormatter(c.Format)   // 设置日志格式
 
 	var file *rotatelogs.RotateLogs
 
-	if c.Output != "" {
+	if c.Output != "" { // 设置日志输出类型
 		switch c.Output {
 		case "stdout":
 			logrus.SetOutput(os.Stdout)
 		case "stderr":
 			logrus.SetOutput(os.Stderr)
-		case "file":
+		case "file": // 当日志输出为文件的时候，借助rotatelogs包来完成日志分割
 			if name := c.OutputFile; name != "" {
-				_ = os.MkdirAll(filepath.Dir(name), 0777)
+				_ = os.MkdirAll(filepath.Dir(name), 0777) // 创建日志存储目录
 
 				// 利用rotatelogs包做日志分割
 				file, err := rotatelogs.New(
 					name+".%Y-%m-%d",
-					rotatelogs.WithLinkName(name),
-					rotatelogs.WithRotationTime(time.Duration(c.RotationTime)*time.Hour),
-					rotatelogs.WithRotationCount(uint(c.RotationCount)))
+					rotatelogs.WithLinkName(name), // 日志文件地址
+					rotatelogs.WithRotationTime(time.Duration(c.RotationTime)*time.Hour), // 日志轮训周期 一个日志文件存储多长时间
+					rotatelogs.WithRotationCount(uint(c.RotationCount)))                  // 日志轮询数量, 一共存储多少个日志文件
 				if err != nil {
 					return nil, err
 				}
@@ -188,7 +188,7 @@ func InitLogger() (func(), error) {
 
 	return func() {
 		if file != nil {
-			file.Close()
+			_ = file.Close()
 		}
 	}, nil
 }

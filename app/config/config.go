@@ -68,9 +68,15 @@ type Config struct {
 	Redis       Redis
 	CORS        CORS
 	GZIP        GZIP
+	SESSION     SESSION
 	Gorm        Gorm
 	RMySQL      MySQL
 	WMySQL      MySQL
+}
+
+type SESSION struct {
+	Enable bool
+	Secret string
 }
 
 type HTTP struct {
