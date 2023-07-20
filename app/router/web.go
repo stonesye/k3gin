@@ -2,43 +2,37 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/google/wire"
-	"net/http"
+	"k3gin/app/config"
+	"k3gin/app/middleware"
 )
 
-// RouterSet 利用wire设置Router构造函数, 细心的发型当前文件并没有函数是可以构造Router Struct的， 所以利用wire.Struct来构造，这里特殊的事Router实现了接口，我们还需要利用wire.Bind绑定下接口
-var RouterSet = wire.NewSet(wire.Struct(new(Router), "*"), wire.Bind(new(IRouter), new(*Router)))
+// InitGinEngine 生成一个Web 类型的 Gin Engine
+func InitGinEngine(r IRouter) *gin.Engine {
+	gin.SetMode(config.C.RunMode)
 
-type IRouter interface {
-	Register(engine *gin.Engine) error
-	Prefixes() []string
-}
+	app := gin.New()
 
-type Router struct {
-}
+	// 允许访问的目录地址
+	prefixes := r.Prefixes()
 
-// Prefixes API允许访问的目录地址
-func (r *Router) Prefixes() []string {
-	return []string{"/api"}
-}
-
-func (r *Router) Register(e *gin.Engine) error {
-	r.RegisterAPI(e)
-	return nil
-}
-
-func (r *Router) RegisterAPI(e *gin.Engine) {
-
-	g := e.Group("/api")
-
-	v1 := g.Group("/v1")
-	{
-		guser := v1.Group("/user")
-		{
-			guser.GET("", func(c *gin.Context) {
-				c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "pong"})
-			})
-		}
+	// 设置中间件
+	if config.C.CORS.Enable {
+		app.Use(middleware.CORSMiddleware())
 	}
 
+	if config.C.SESSION.Enable {
+		app.Use(middleware.SESSMiddleware())
+	}
+
+	// 静态文件目录
+	if dir := config.C.WWW; dir != "" {
+		app.Use(middleware.WWWMiddelware(dir, middleware.AllowPathPrefixSkipper(prefixes...)))
+	}
+
+	// 将API封装进去, 如果有可能封装不同的api 可以改写r.Register
+	if err := r.Register(app); err != nil {
+
+	}
+
+	return app
 }

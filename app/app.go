@@ -2,8 +2,14 @@ package app
 
 import (
 	"context"
+	"crypto/tls"
+	"fmt"
 	"k3gin/app/config"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 type options struct {
@@ -23,6 +29,7 @@ func SetWWWDir(s string) func(*options) {
 	}
 }
 
+// Init  (ctx [自定义context 里面封装了一些Key-value 区别于gin.Context] , opts [用于初始化options Struct])
 func Init(ctx context.Context, opts ...func(*options)) (func(), error) {
 	var o options
 
@@ -32,12 +39,14 @@ func Init(ctx context.Context, opts ...func(*options)) (func(), error) {
 	}
 
 	// 加载config文件内容到Config strut
-	config.MustLoad(o.ConfigFile) // 并没有利用到定制化的logrus
+	config.MustLoad(o.ConfigFile) // 并没有利用到定制化的logrus, 因为还没有调用InitLogger
 
+	// 启动命令会可选的方式带入静态目录， 如果没有附带就沿用配置文件的值
 	if v := o.WWWDir; v != "" {
 		config.C.WWW = v
 	}
 
+	// 检查一下所有的配置文件, 打印
 	config.PrintWithJSON()
 
 	// 利用默认的logrus来打印日志
@@ -50,18 +59,102 @@ func Init(ctx context.Context, opts ...func(*options)) (func(), error) {
 	}
 
 	// 利用wire初始化所有的类
+	injector, injectorCleanFunc, err := BuildInjector()
+	if err != nil {
+		return nil, err
+	}
+
+	httpServerCleanFunc := InitHttpServer(ctx, injector.Engine)
 
 	return func() {
+		httpServerCleanFunc()
 		loggerCleanFunc()
+		injectorCleanFunc()
 	}, nil
 }
 
 func Run(ctx context.Context, opts ...func(*options)) error {
+	// 创建一个信号chan
+	sc := make(chan os.Signal, 1)
+	// 设置允许传递给 singal chan的信号类型
+	signal.Notify(sc, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
-	_, err := Init(ctx, opts...)
+	// 初始化所有的对象
+	cleanFunc, err := Init(ctx, opts...)
+
 	if err != nil {
 		return err
 	}
 
+	// 初始化程序退出状态
+	state := 1
+
+EXIT:
+	select {
+	case sig := <-sc:
+		// 打印 signal chan接收到的信号
+		WithContext(ctx).Info("Receive singal[%s]", sig.String())
+		switch sig {
+		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
+			// 如果接收到的信号是以上信号，忽略钓, 重新接收信号
+			state = 0
+			break EXIT
+		case syscall.SIGHUP:
+		default:
+			// 如果信号是sighup, 或者其他的 则退出
+			state = 1
+			break
+		}
+	}
+
+	// 清理程序，并退出
+	cleanFunc()
+	WithContext(ctx).Info("Server exit ")
+	time.Sleep(time.Second)
+	os.Exit(state)
 	return nil
+}
+
+func InitHttpServer(ctx context.Context, handler http.Handler) func() {
+	cfg := config.C.HTTP
+
+	addr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
+
+	srv := &http.Server{
+		Addr:         addr,
+		Handler:      handler,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 30 * time.Second,
+		IdleTimeout:  30 * time.Second,
+	}
+
+	go func() {
+		WithContext(ctx).Printf("HTTP server is running at %s.", addr)
+
+		var err error
+
+		if cfg.CertFile != "" && cfg.KeyFile != "" {
+			srv.TLSConfig = &tls.Config{MinVersion: tls.VersionTLS12}
+			err = srv.ListenAndServeTLS(cfg.CertFile, cfg.KeyFile)
+		} else {
+			err = srv.ListenAndServe()
+		}
+
+		if err != nil && err != http.ErrServerClosed {
+			panic(err)
+		}
+	}()
+
+	// 返回一个函数，在这个函数里面可以做httpserver的清理，方便整个应用退出后，清理工作进行
+	return func() {
+		ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(cfg.ShutdownTimeout))
+		defer cancel()
+
+		// 将长连接关闭掉
+		srv.SetKeepAlivesEnabled(false)
+		// 关闭HTTPServer服务
+		if err := srv.Shutdown(ctx); err != nil {
+			WithContext(ctx).Errorf(err.Error())
+		}
+	}
 }

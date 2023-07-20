@@ -13,7 +13,6 @@ func AllowPathPrefixSkipper(prefixes ...string) func(c *gin.Context) bool {
 				return true
 			}
 		}
-
 		return false
 	}
 }
