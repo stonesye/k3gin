@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 )
 
-// WWWMiddelware (root[静态目录地址] , AllowPathPrefixSkipper[允许访问的目录地址])
-func WWWMiddelware(root string, skippers ...func(ctx *gin.Context) bool) gin.HandlerFunc {
+// WWWMiddleware (root[静态目录地址] , AllowPathPrefixSkipper[允许访问的目录地址])
+func WWWMiddleware(root string, skippers ...func(ctx *gin.Context) bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 判断API请求是否合法
 		if SkipHandler(c, skippers...) {

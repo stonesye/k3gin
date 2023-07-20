@@ -12,6 +12,7 @@ import (
 	"time"
 )
 
+// options 封装命令行输入的参数值
 type options struct {
 	ConfigFile string // 配置文件地址
 	WWWDir     string // 静态文件地址
@@ -29,54 +30,10 @@ func SetWWWDir(s string) func(*options) {
 	}
 }
 
-// Init  (ctx [自定义context 里面封装了一些Key-value 区别于gin.Context] , opts [用于初始化options Struct])
-func Init(ctx context.Context, opts ...func(*options)) (func(), error) {
-	var o options
-
-	// 初始化CLI传递的配置文件信息，封装到options struct
-	for _, opt := range opts {
-		opt(&o)
-	}
-
-	// 加载config文件内容到Config strut
-	config.MustLoad(o.ConfigFile) // 并没有利用到定制化的logrus, 因为还没有调用InitLogger
-
-	// 启动命令会可选的方式带入静态目录， 如果没有附带就沿用配置文件的值
-	if v := o.WWWDir; v != "" {
-		config.C.WWW = v
-	}
-
-	// 检查一下所有的配置文件, 打印
-	config.PrintWithJSON()
-
-	// 利用默认的logrus来打印日志
-	WithContext(ctx).Printf("Start server,#run_mode %s,#pid %d", config.C.RunMode, os.Getpid())
-
-	// 初始化logrus 定制化日志
-	loggerCleanFunc, err := InitLogger()
-	if err != nil {
-		return nil, err
-	}
-
-	// 利用wire初始化所有的类
-	injector, injectorCleanFunc, err := BuildInjector()
-	if err != nil {
-		return nil, err
-	}
-
-	httpServerCleanFunc := InitHttpServer(ctx, injector.Engine)
-
-	return func() {
-		httpServerCleanFunc()
-		loggerCleanFunc()
-		injectorCleanFunc()
-	}, nil
-}
-
 func Run(ctx context.Context, opts ...func(*options)) error {
 	// 创建一个信号chan
 	sc := make(chan os.Signal, 1)
-	// 设置允许传递给 singal chan的信号类型
+	// 设置允许传递给 singal chan 的信号类型
 	signal.Notify(sc, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
 	// 初始化所有的对象
@@ -113,6 +70,50 @@ EXIT:
 	time.Sleep(time.Second)
 	os.Exit(state)
 	return nil
+}
+
+// Init  (ctx [自定义context 里面封装了一些Key-value 区别于gin.Context] , opts [用于初始化options Struct])
+func Init(ctx context.Context, opts ...func(*options)) (func(), error) {
+	var o options
+
+	// 初始化CLI传递的配置文件信息，封装到options struct
+	for _, opt := range opts {
+		opt(&o)
+	}
+
+	// 加载config文件内容到Config strut
+	config.MustLoad(o.ConfigFile)
+
+	// 启动命令会可选的方式带入静态目录， 如果没有附带就沿用配置文件的值
+	if v := o.WWWDir; v != "" {
+		config.C.WWW = v
+	}
+
+	// 检查一下所有的配置文件, 打印
+	config.PrintWithJSON()
+
+	// 利用默认的logrus来打印日志, 并没有利用到定制化的logrus, 因为还没有调用InitLogger
+	WithContext(ctx).Printf("Start server,#run_mode %s,#pid %d", config.C.RunMode, os.Getpid())
+
+	// 初始化logrus 定制化日志
+	loggerCleanFunc, err := InitLogger()
+	if err != nil {
+		return nil, err
+	}
+
+	// 利用wire初始化所有的类
+	injector, injectorCleanFunc, err := BuildInjector()
+	if err != nil {
+		return nil, err
+	}
+
+	httpServerCleanFunc := InitHttpServer(ctx, injector.Engine)
+
+	return func() {
+		httpServerCleanFunc()
+		loggerCleanFunc()
+		injectorCleanFunc()
+	}, nil
 }
 
 func InitHttpServer(ctx context.Context, handler http.Handler) func() {

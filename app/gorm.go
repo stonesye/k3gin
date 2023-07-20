@@ -40,9 +40,12 @@ func InitGormDB() (*DB, func(), error) {
 		WDB: WDB,
 	}
 
-	clean := func() {}
+	// 以前Gorm需要关注close链接，现在gorm不需要再关注close db的操作了
+	clean := func() {
 
-	// TODO 自动映射数据库表结构, 后面补充
+	}
+
+	// TODO 自动映射数据库表结构, 后面有时间再补充
 	if C.Gorm.EnableAutoMigrate {
 
 	}

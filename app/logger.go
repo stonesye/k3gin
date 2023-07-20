@@ -12,23 +12,10 @@ import (
 )
 
 // 设置下别名
-
-type Logger = logrus.Logger
 type Entry = logrus.Entry
-type Hook = logrus.Hook
 type Level = logrus.Level
 
-// 各日志级别
-const (
-	PANIC Level = iota
-	FATAL
-	ERROR
-	WARN
-	INFO
-	DEBUG
-	TRACE
-)
-
+// 1:fatal 2:error,3:warn,4:info,5:debug,6:trace
 func SetLevel(level Level) {
 	logrus.SetLevel(level)
 }

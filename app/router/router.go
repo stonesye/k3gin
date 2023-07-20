@@ -22,6 +22,7 @@ func (r *Router) Prefixes() []string {
 	return []string{"/api"}
 }
 
+// Register 给GinEngine设置API路由
 func (r *Router) Register(e *gin.Engine) error {
 	r.RegisterAPI(e)
 	return nil
@@ -40,5 +41,4 @@ func (r *Router) RegisterAPI(e *gin.Engine) {
 			})
 		}
 	}
-
 }

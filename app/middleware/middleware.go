@@ -2,7 +2,7 @@ package middleware
 
 import "github.com/gin-gonic/gin"
 
-// AllowPathPrefixSkipper 判断是不是可以放过的API请求URL
+// AllowPathPrefixSkipper 判断是不是可以放过的API请求URL,  prefixes = []string{"/api", ....}
 func AllowPathPrefixSkipper(prefixes ...string) func(c *gin.Context) bool {
 	return func(c *gin.Context) bool {
 		path := c.Request.URL.Path

@@ -26,7 +26,7 @@ func InitGinEngine(r IRouter) *gin.Engine {
 
 	// 静态文件目录
 	if dir := config.C.WWW; dir != "" {
-		app.Use(middleware.WWWMiddelware(dir, middleware.AllowPathPrefixSkipper(prefixes...)))
+		app.Use(middleware.WWWMiddleware(dir, middleware.AllowPathPrefixSkipper(prefixes...)))
 	}
 
 	// 将API封装进去, 如果有可能封装不同的api 可以改写r.Register
