@@ -3,7 +3,10 @@
 
 package app
 
-import "github.com/google/wire"
+import (
+	"github.com/google/wire"
+	"k3gin/app/router"
+)
 
 /**
 func TestInjector(name string, age int) (*util.Person, func(), error) {
@@ -16,6 +19,8 @@ func TestInjector(name string, age int) (*util.Person, func(), error) {
 func BuildInjector() (*Injector, func(), error) {
 	wire.Build(
 		InitGormDB,
+		router.RouterSet,
+		router.InitGinEngine,
 		InjectorSet,
 	)
 	return new(Injector), nil, nil
