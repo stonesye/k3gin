@@ -9,24 +9,25 @@ import (
 
 func main() {
 
-	// 将 tag 封装到 context 里面
+	// 将 tag 封装到 自定义的 context 里面
 	ctx := app.NewTagContext(context.Background(), "__main__")
 
+	// 初始化CLI命令行对象
 	cliApp := cli.NewApp()
 	cliApp.Name = "k3-gin"
 	cliApp.Version = "1.0.1"
 	cliApp.Usage = "K3-GIN based on gin + gorm + wire + logrus + rotatelogs."
 	cliApp.Commands = []*cli.Command{
-		webCmd(ctx),
+		cmd(ctx),
 	}
 
-	// 命令行包cli 的Run函数 其实是执行 Commands下所有的 cli.Command 中的 Key =  Action 指定函数
+	// 命令行包cli 的Run函数 其实是执行 Commands 下所有的 cli.Command 中的 Action 指定的函数
 	if err := cliApp.Run(os.Args); err != nil {
 		app.WithContext(ctx).Errorf(err.Error())
 	}
 }
 
-func webCmd(ctx context.Context) *cli.Command {
+func cmd(ctx context.Context) *cli.Command {
 	return &cli.Command{
 		Name:  "api",
 		Usage: "Run http server group",
@@ -52,12 +53,8 @@ func webCmd(ctx context.Context) *cli.Command {
 
 /**
 go run cmd/gin-admin/main.go web -c ./configs/config.toml --www ./static
-
 swag init --parseDependency --generalInfo ./cmd/${APP}/main.go --output ./internal/app/swagger
-
 # Or use Makefile: make swagger
-
 wire gen ./internal/app
-
 # Or use Makefile: make wire
 */
