@@ -29,7 +29,7 @@ func main() {
 
 func cmd(ctx context.Context) *cli.Command {
 	return &cli.Command{
-		Name:  "api",
+		Name:  "web",
 		Usage: "Run http server group",
 		Flags: []cli.Flag{
 			&cli.StringFlag{

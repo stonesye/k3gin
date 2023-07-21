@@ -1,44 +1,34 @@
 package middleware
 
-import "github.com/gin-gonic/gin"
+import (
+	"fmt"
+	"github.com/gin-gonic/gin"
+)
 
-// AllowPathPrefixSkipper 判断是不是可以放过的API请求URL,  prefixes = []string{"/api", ....}
-func AllowPathPrefixSkipper(prefixes ...string) func(c *gin.Context) bool {
+func AllowPathPrefixSkipper(prefixes ...string) func(*gin.Context) bool {
 	return func(c *gin.Context) bool {
 		path := c.Request.URL.Path
+		fmt.Println(path, "<---path--->")
+
 		pathLen := len(path)
 
-		for _, p := range prefixes {
-			if pl := len(p); pathLen >= pl && path[:pl] == p {
+		for _, prefix := range prefixes {
+			fmt.Println(prefix, "<---prefix--->")
+			if pl := len(prefix); pathLen >= pl && path[:pl] == prefix {
 				return true
 			}
 		}
+
 		return false
 	}
 }
 
-// AllowPathPrefixNoSkipper 判断哪些是不可以进入系统的API请求URL
-func AllowPathPrefixNoSkipper(prefixes ...string) func(c *gin.Context) bool {
-	return func(c *gin.Context) bool {
-		path := c.Request.URL.Path
-		pathLen := len(path)
-
-		for _, p := range prefixes {
-			if pl := len(p); pathLen >= pl && path[:pl] == p {
-				return false
-			}
-		}
-
-		return true
-	}
-
-}
-
-func SkipHandler(c *gin.Context, skippers ...func(*gin.Context) bool) bool {
+func SkipHandler(c *gin.Context, skippers ...func(ctx *gin.Context) bool) bool {
 	for _, skipper := range skippers {
 		if skipper(c) {
 			return true
 		}
 	}
+
 	return false
 }

@@ -85,7 +85,7 @@ MaxOpenConns = 150
 # 设置空闲连接池中的最大连接数
 MaxIdleConns = 50
 # 数据库表名前缀
-TablePrefix = "g_"
+TablePrefix = ""
 # 是否启用自动映射数据库表结构
 EnableAutoMigrate = true
 
