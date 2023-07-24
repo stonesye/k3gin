@@ -1,19 +1,17 @@
 package middleware
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
+// AllowPathPrefixSkipper 校验RequestURL 的连接是不是静态目录
 func AllowPathPrefixSkipper(prefixes ...string) func(*gin.Context) bool {
 	return func(c *gin.Context) bool {
 		path := c.Request.URL.Path
-		fmt.Println(path, "<---path--->")
 
 		pathLen := len(path)
 
 		for _, prefix := range prefixes {
-			fmt.Println(prefix, "<---prefix--->")
 			if pl := len(prefix); pathLen >= pl && path[:pl] == prefix {
 				return true
 			}
