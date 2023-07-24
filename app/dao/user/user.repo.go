@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/google/wire"
 	"k3gin/app/gormx"
-	"k3gin/app/logger"
 	"k3gin/app/schema"
 )
 
@@ -51,8 +50,6 @@ func (u *UserRepo) Query(ctx context.Context, params schema.UserQueryParam, opts
 	if err != nil {
 		return nil, err
 	}
-
-	logger.WithContext(ctx).Infof("%v", list)
 
 	return &schema.UserQueryResult{Data: list.ToSchemaUsers()}, nil
 }
