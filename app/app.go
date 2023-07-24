@@ -32,6 +32,8 @@ func SetWWWDir(s string) func(*options) {
 }
 
 func Run(ctx context.Context, opts ...func(*options)) error {
+	// 初始化程序退出状态
+	state := 1
 	// 创建一个信号chan
 	sc := make(chan os.Signal, 1)
 	// 设置允许传递给 singal chan 的信号类型
@@ -43,9 +45,6 @@ func Run(ctx context.Context, opts ...func(*options)) error {
 	if err != nil {
 		return err
 	}
-
-	// 初始化程序退出状态
-	state := 1
 
 EXIT:
 	select {
@@ -117,6 +116,7 @@ func Init(ctx context.Context, opts ...func(*options)) (func(), error) {
 	}, nil
 }
 
+// InitHttpServer 初始化HTTP服务器
 func InitHttpServer(ctx context.Context, handler http.Handler) func() {
 	cfg := config.C.HTTP
 
@@ -154,7 +154,7 @@ func InitHttpServer(ctx context.Context, handler http.Handler) func() {
 
 		// 将长连接关闭掉
 		srv.SetKeepAlivesEnabled(false)
-		// 关闭HTTPServer服务
+		// 关闭HTTPServer服务, 设置了timeout context  一旦时间到了就会执行ctx.Done()
 		if err := srv.Shutdown(ctx); err != nil {
 			logger.WithContext(ctx).Errorf(err.Error())
 		}

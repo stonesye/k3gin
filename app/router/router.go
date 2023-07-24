@@ -26,14 +26,21 @@ func (r *Router) Prefixes() []string {
 func (r *Router) Register(e *gin.Engine) error {
 
 	g := e.Group("/api")
+	{
+		g.GET("ping", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "pong"})
+		})
+	}
 
+	// V1 版本的API
 	v1 := g.Group("/v1")
 	{
+		// 用户模块
 		guser := v1.Group("/user")
 		{
-			guser.GET("", func(c *gin.Context) {
-				c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "pong"})
-			})
+			guser.GET("")
+
+			guser.GET("/:id")
 		}
 	}
 
