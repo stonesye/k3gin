@@ -23,6 +23,14 @@ func ParseQuery(c *gin.Context, obj interface{}) error {
 	return nil
 }
 
+func ParseJson(c *gin.Context, obj interface{}) error {
+	if err := c.ShouldBindJSON(obj); err != nil {
+		return errors.Wrap400Response(err, fmt.Sprintf("Parse request json failed : %s ", err.Error()))
+	}
+
+	return nil
+}
+
 func ResOK(c *gin.Context) {
 	ResSuccess(c, schema.StatusResult{Status: "OK"})
 }
