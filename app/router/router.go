@@ -3,6 +3,7 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
+	"k3gin/app/api"
 	"net/http"
 )
 
@@ -15,6 +16,7 @@ type IRouter interface {
 }
 
 type Router struct {
+	UserAPI *api.UserApi
 }
 
 // Prefixes API允许访问的目录地址
@@ -38,9 +40,7 @@ func (r *Router) Register(e *gin.Engine) error {
 		// 用户模块
 		guser := v1.Group("/user")
 		{
-			guser.GET("")
-
-			guser.GET("/:id")
+			guser.GET("", r.UserAPI.Query)
 		}
 	}
 

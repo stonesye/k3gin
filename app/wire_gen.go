@@ -7,21 +7,35 @@
 package app
 
 import (
+	"k3gin/app/api"
+	"k3gin/app/dao/user"
+	"k3gin/app/gormx"
 	"k3gin/app/router"
+	"k3gin/app/service"
 )
 
 // Injectors from wire.go:
 
 func BuildInjector() (*Injector, func(), error) {
-	routerRouter := &router.Router{}
-	engine := router.InitGinEngine(routerRouter)
-	db, cleanup, err := InitGormDB()
+	db, cleanup, err := gormx.InitGormDB()
 	if err != nil {
 		return nil, nil, err
 	}
+	userRepo := &user.UserRepo{
+		DB: db,
+	}
+	userSrv := &service.UserSrv{
+		UserRepo: userRepo,
+	}
+	userApi := &api.UserApi{
+		UserSrv: userSrv,
+	}
+	routerRouter := &router.Router{
+		UserAPI: userApi,
+	}
+	engine := router.InitGinEngine(routerRouter)
 	injector := &Injector{
 		Engine: engine,
-		DB:     db,
 	}
 	return injector, func() {
 		cleanup()
