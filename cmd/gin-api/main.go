@@ -4,13 +4,14 @@ import (
 	"context"
 	"github.com/urfave/cli/v2"
 	"k3gin/app"
+	"k3gin/app/logger"
 	"os"
 )
 
 func main() {
 
 	// 将 tag 封装到 自定义的 context 里面
-	ctx := app.NewTagContext(context.Background(), "__main__")
+	ctx := logger.NewTagContext(context.Background(), "__main__")
 
 	// 初始化CLI命令行对象
 	cliApp := cli.NewApp()
@@ -23,7 +24,7 @@ func main() {
 
 	// 命令行包cli 的Run函数 其实是执行 Commands 下所有的 cli.Command 中的 Action 指定的函数
 	if err := cliApp.Run(os.Args); err != nil {
-		app.WithContext(ctx).Errorf(err.Error())
+		logger.WithContext(ctx).Errorf(err.Error())
 	}
 }
 

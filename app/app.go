@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"k3gin/app/config"
+	"k3gin/app/logger"
 	"net/http"
 	"os"
 	"os/signal"
@@ -50,7 +51,7 @@ EXIT:
 	select {
 	case sig := <-sc:
 		// 打印 signal chan接收到的信号
-		WithContext(ctx).Info("Receive singal[%s]", sig.String())
+		logger.WithContext(ctx).Info("Receive singal[%s]", sig.String())
 		switch sig {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
 			// 如果接收到的信号是以上信号，忽略钓, 重新接收信号
@@ -66,7 +67,7 @@ EXIT:
 
 	// 清理程序，并退出
 	cleanFunc()
-	WithContext(ctx).Info("Server exit ")
+	logger.WithContext(ctx).Info("Server exit ")
 	time.Sleep(time.Second)
 	os.Exit(state)
 	return nil
@@ -93,10 +94,10 @@ func Init(ctx context.Context, opts ...func(*options)) (func(), error) {
 	config.PrintWithJSON()
 
 	// 利用默认的logrus来打印日志, 并没有利用到定制化的logrus, 因为还没有调用InitLogger
-	WithContext(ctx).Printf("Start server,#run_mode %s,#pid %d", config.C.RunMode, os.Getpid())
+	logger.WithContext(ctx).Printf("Start server,#run_mode %s,#pid %d", config.C.RunMode, os.Getpid())
 
 	// 初始化logrus 定制化日志
-	loggerCleanFunc, err := InitLogger()
+	loggerCleanFunc, err := logger.InitLogger()
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +131,7 @@ func InitHttpServer(ctx context.Context, handler http.Handler) func() {
 	}
 
 	go func() {
-		WithContext(ctx).Printf("HTTP server is running at %s.", addr)
+		logger.WithContext(ctx).Printf("HTTP server is running at %s.", addr)
 
 		var err error
 
@@ -155,7 +156,7 @@ func InitHttpServer(ctx context.Context, handler http.Handler) func() {
 		srv.SetKeepAlivesEnabled(false)
 		// 关闭HTTPServer服务
 		if err := srv.Shutdown(ctx); err != nil {
-			WithContext(ctx).Errorf(err.Error())
+			logger.WithContext(ctx).Errorf(err.Error())
 		}
 	}
 }
