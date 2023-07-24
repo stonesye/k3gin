@@ -51,7 +51,7 @@ EXIT:
 	select {
 	case sig := <-sc:
 		// 打印 signal chan接收到的信号
-		logger.WithContext(ctx).Info("Receive singal[%s]", sig.String())
+		logger.WithContext(ctx).Infof("Receive signal[%s]", sig.String())
 		switch sig {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
 			// 如果接收到的信号是以上信号，忽略钓, 重新接收信号
@@ -61,13 +61,13 @@ EXIT:
 		default:
 			// 如果信号是sighup, 或者其他的 则退出
 			state = 1
-			break
+			break EXIT
 		}
 	}
 
 	// 清理程序，并退出
 	cleanFunc()
-	logger.WithContext(ctx).Info("Server exit ")
+	logger.WithContext(ctx).Info("Server exit !")
 	time.Sleep(time.Second)
 	os.Exit(state)
 	return nil
