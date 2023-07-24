@@ -8,6 +8,14 @@ import (
 	"os"
 )
 
+// @title k3gin
+// @version 1.0.1
+// @description RBAC scaffolding based on GIN + GORM + WIRE.
+// @name Authorization
+// @schemes http https
+// @basePath /
+// @contact.name STones_
+// @contact.email yelei@3k.com
 func main() {
 
 	// 将 tag 封装到 自定义的 context 里面
@@ -53,8 +61,8 @@ func cmd(ctx context.Context) *cli.Command {
 }
 
 /**
-go run cmd/gin-admin/main.go web -c ./configs/config.toml --www ./static
-swag init --parseDependency --generalInfo ./cmd/${APP}/main.go --output ./internal/app/swagger
+go run cmd/gin-api/main.go web -c ./configs/config.toml --www ./static
+swag init --parseDependency --generalInfo ./cmd/gin-api/main.go --output ./app/swagger
 # Or use Makefile: make swagger
 wire gen ./internal/app
 # Or use Makefile: make wire

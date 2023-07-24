@@ -16,6 +16,16 @@ type UserApi struct {
 
 var UserApiSet = wire.NewSet(wire.Struct(new(UserApi), "*"))
 
+// ShowAccount godoc
+// @Summary      Show user
+// @Description  get userinfo by ID,UserName
+// @Tags         QueryAPI
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "Account ID"
+// @Success      200  {object}  gin.H
+// @Failure      400  {object}  schema.ErrorResult
+// @Router       /api/v1/user [get]
 func (u *UserApi) Query(c *gin.Context) {
 	ctx := c.Request.Context()
 	ctx = logger.NewTagContext(ctx, "__user__api__query__")
