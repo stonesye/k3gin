@@ -32,9 +32,7 @@ func InitGinEngine(r IRouter) *gin.Engine {
 	}
 
 	// 将API封装进去, 如果有可能封装不同的api 可以改写r.Register
-	if err := r.Register(app); err != nil {
-
-	}
+	r.Register(app)
 
 	// 设置doc 文档
 	if config.C.Swagger {
