@@ -2,6 +2,8 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"k3gin/app/config"
 	"k3gin/app/middleware"
 )
@@ -26,13 +28,17 @@ func InitGinEngine(r IRouter) *gin.Engine {
 
 	// 静态文件目录
 	if dir := config.C.WWW; dir != "" {
-		// app.Use(middleware.WWWMiddleware(dir, middleware.AllowPathPrefixSkipper(prefixes...)))
 		app.Use(middleware.StaticPathMiddleware(dir, middleware.AllowPathPrefixSkipper(prefixes...)))
 	}
 
 	// 将API封装进去, 如果有可能封装不同的api 可以改写r.Register
 	if err := r.Register(app); err != nil {
 
+	}
+
+	// 设置doc 文档
+	if config.C.Swagger {
+		app.GET("swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
 
 	return app

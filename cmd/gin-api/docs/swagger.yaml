@@ -1,0 +1,62 @@
+basePath: /
+definitions:
+  schema.ErrorItem:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+    type: object
+  schema.ErrorResult:
+    properties:
+      error:
+        $ref: '#/definitions/schema.ErrorItem'
+    type: object
+  schema.ListResult:
+    properties:
+      list: {}
+    type: object
+host: 127.0.0.1:8081
+info:
+  contact:
+    email: yelei@3k.com
+    name: STones_
+    url: http://www.swagger.io/support
+  description: RBAC scaffolding based on GIN + GORM + WIRE.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: k3gin
+  version: 1.0.1
+paths:
+  /api/v1/user:
+    get:
+      parameters:
+      - description: 用户名
+        in: query
+        name: userName
+        type: string
+      - description: 用户状态(1，正常; 2，失效)
+        in: query
+        name: status
+        type: integer
+      - description: 模糊查询
+        in: query
+        name: queryValue
+        type: string
+      responses:
+        "200":
+          description: 用户列表
+          schema:
+            $ref: '#/definitions/schema.ListResult'
+        "400":
+          description: 错误信息
+          schema:
+            $ref: '#/definitions/schema.ErrorResult'
+      summary: 根据用户名或用户状态查询用户信息
+      tags:
+      - UserQueryAPI
+schemes:
+- http
+- https
+swagger: "2.0"

@@ -1,0 +1,94 @@
+{
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "RBAC scaffolding based on GIN + GORM + WIRE.",
+        "title": "k3gin",
+        "contact": {
+            "name": "STones_",
+            "url": "http://www.swagger.io/support",
+            "email": "yelei@3k.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0.1"
+    },
+    "host": "127.0.0.1:8081",
+    "basePath": "/",
+    "paths": {
+        "/api/v1/user": {
+            "get": {
+                "tags": [
+                    "UserQueryAPI"
+                ],
+                "summary": "根据用户名或用户状态查询用户信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户名",
+                        "name": "userName",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "用户状态(1，正常; 2，失效)",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "模糊查询",
+                        "name": "queryValue",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "用户列表",
+                        "schema": {
+                            "$ref": "#/definitions/schema.ListResult"
+                        }
+                    },
+                    "400": {
+                        "description": "错误信息",
+                        "schema": {
+                            "$ref": "#/definitions/schema.ErrorResult"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "schema.ErrorItem": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "schema.ErrorResult": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "$ref": "#/definitions/schema.ErrorItem"
+                }
+            }
+        },
+        "schema.ListResult": {
+            "type": "object",
+            "properties": {
+                "list": {}
+            }
+        }
+    }
+}

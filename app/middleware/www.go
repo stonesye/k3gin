@@ -9,6 +9,7 @@ import (
 // StaticPathMiddleware 过滤请求过来的RequestURL 是进入静态目录地址还是进入应用程序内
 // skippers 可以多个校验，目前这里只传了一个哟
 func StaticPathMiddleware(root string, skippers ...func(*gin.Context) bool) gin.HandlerFunc {
+
 	return func(c *gin.Context) {
 		// 判断请求的API是否合法, 如果是API，证明需要进入到应用逻辑所以直接到下一个Middleware 如果不是,就返回真实静态文件地址
 		if SkipHandler(c, skippers...) {

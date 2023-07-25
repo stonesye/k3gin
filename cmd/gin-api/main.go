@@ -5,17 +5,24 @@ import (
 	"github.com/urfave/cli/v2"
 	"k3gin/app"
 	"k3gin/app/logger"
+	_ "k3gin/cmd/gin-api/docs"
 	"os"
 )
 
-// @title k3gin
-// @version 1.0.1
-// @description RBAC scaffolding based on GIN + GORM + WIRE.
-// @name Authorization
-// @schemes http https
-// @basePath /
-// @contact.name STones_
-// @contact.email yelei@3k.com
+//	@title			k3gin
+//	@version		1.0.1
+//	@description	RBAC scaffolding based on GIN + GORM + WIRE.
+
+//	@contact.name	STones_
+//	@contact.email	yelei@3k.com
+//	@contact.url	http://www.swagger.io/support
+
+//	@license.name	Apache 2.0
+//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
+
+//	@schemes	http https
+//	@host		127.0.0.1:8081
+//	@BasePath	/
 func main() {
 
 	// 将 tag 封装到 自定义的 context 里面
@@ -62,7 +69,9 @@ func cmd(ctx context.Context) *cli.Command {
 
 /**
 go run cmd/gin-api/main.go web -c ./configs/config.toml --www ./static
-swag init --parseDependency --generalInfo ./cmd/gin-api/main.go --output ./app/swagger
+swag init -g cmd/gin-api/main.go -o cmd/gin-api/docs
+
+
 # Or use Makefile: make swagger
 wire gen ./internal/app
 # Or use Makefile: make wire

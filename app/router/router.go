@@ -3,8 +3,6 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 	"k3gin/app/api"
 	"net/http"
 )
@@ -23,7 +21,7 @@ type Router struct {
 
 // Prefixes API允许访问的目录地址
 func (r *Router) Prefixes() []string {
-	return []string{"/api"}
+	return []string{"/api", "/swagger"}
 }
 
 // Register 给GinEngine设置API路由
@@ -45,8 +43,6 @@ func (r *Router) Register(e *gin.Engine) error {
 			guser.GET("", r.UserAPI.Query)
 		}
 	}
-
-	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	return nil
 }

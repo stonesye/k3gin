@@ -7,8 +7,8 @@ import (
 // AllowPathPrefixSkipper 校验RequestURL 的连接是不是静态目录
 func AllowPathPrefixSkipper(prefixes ...string) func(*gin.Context) bool {
 	return func(c *gin.Context) bool {
-		path := c.Request.URL.Path
 
+		path := c.Request.URL.Path
 		pathLen := len(path)
 
 		for _, prefix := range prefixes {
