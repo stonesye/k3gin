@@ -6,6 +6,7 @@ import (
 	"k3gin/app/ginx"
 	"k3gin/app/schema"
 	"k3gin/app/service"
+	"time"
 )
 
 type UserApi struct {
@@ -34,11 +35,19 @@ func (u *UserApi) Query(c *gin.Context) {
 		return
 	}
 
-	result, err := u.UserSrv.Query(ctx, params)
+	// 排序和查询字段
+	options := schema.UserQueryOptions{
+		OrderFields: []*schema.OrderField{
+			{Key: "user_id", Direction: 1},
+		},
+		SelectFields: []string{"user_id", "username", "password", "status"},
+	}
+
+	result, err := u.UserSrv.Query(ctx, params, options)
 	if err != nil {
 		ginx.ResError(c, err)
 		return
 	}
 
-	ginx.ResList(c, result.Data)
+	ginx.ResSuccess(c, result.Data, "[%v]user list success !", time.Now())
 }

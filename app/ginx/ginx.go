@@ -13,8 +13,9 @@ import (
 // 封装HTTP/HTTPS协议请求数据的封装和Response返回对象
 
 const (
-	REQBODYKEY = "req-body"
-	RESBODYKEY = "res-body"
+	ReqBodyKey  = "req-body"
+	ResBodyKey  = "res-body"
+	SuccessCode = 0
 )
 
 func ParseQuery(c *gin.Context, obj interface{}) error {
@@ -33,36 +34,21 @@ func ParseJson(c *gin.Context, obj interface{}) error {
 	return nil
 }
 
-func ResOK(c *gin.Context) {
-	ResSuccess(c, schema.StatusResult{Status: "OK"})
-}
-
-func ResList(c *gin.Context, v interface{}) {
-	ResSuccess(c, schema.ListResult{List: v})
-}
-
-func ResSuccess(c *gin.Context, v interface{}) {
-	ResJSON(c, http.StatusOK, v)
-}
-
-func ResJSON(ctx *gin.Context, status int, v interface{}) {
-	buf, err := json.Marshal(v)
-	if err != nil {
-		panic(err)
+func ResSuccess(c *gin.Context, v interface{}, format string, option ...interface{}) {
+	res := schema.SuccessResult{
+		Code:    SuccessCode,
+		Message: fmt.Sprintf(format, option),
+		Data:    v,
 	}
-
-	ctx.Set(RESBODYKEY, buf)
-	ctx.Data(status, "application/json; charset=utf-8", buf)
-	ctx.Abort()
+	ResJson(c, http.StatusOK, res)
 }
 
-func ResError(ctx *gin.Context, err error, status ...int) {
+func ResError(c *gin.Context, err error, httpStatus ...int) {
 	var res *errors.ResponseError
-
 	if err != nil {
 		if e, ok := err.(*errors.ResponseError); ok {
 			res = e
-		} else {
+		} else { // 如果不是ResponseError
 			res = errors.UnWrapResponse(errors.ErrInternalServer)
 			res.ERR = err
 		}
@@ -70,29 +56,33 @@ func ResError(ctx *gin.Context, err error, status ...int) {
 		res = errors.UnWrapResponse(errors.ErrInternalServer)
 	}
 
-	if len(status) > 0 {
-		res.Status = status[0]
+	if len(httpStatus) > 0 {
+		res.Status = httpStatus[0]
 	}
 
-	// 已封装好errors.ResponseErr, 但有可能error信息为空
+	// 记录错误日志
 	if err := res.ERR; err != nil {
-		if res.Message == "" {
-			res.Message = err.Error()
-		}
-
 		// 将err信息用日志记录下来
 		if status := res.Status; status >= 400 && status < 500 {
-			logger.WithContext(ctx).Warnf(err.Error())
+			logger.WithContext(c).Warnf(err.Error())
 		} else if status >= 500 {
-			logger.WithContext(logger.NewStackContext(ctx, err)).Errorf(err.Error())
+			logger.WithContext(logger.NewStackContext(c, err)).Errorf(err.Error())
 		}
 	}
 
-	errItem := schema.ErrorItem{
+	ResJson(c, res.Status, schema.ErrorResult{
 		Code:    res.Code,
 		Message: res.Message,
+		Err:     res.ERR,
+	})
+}
+
+func ResJson(c *gin.Context, httpStatus int, v interface{}) {
+	buf, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
 	}
-
-	ResJSON(ctx, res.Status, schema.ErrorResult{Error: errItem})
-
+	c.Set(ResBodyKey, buf)
+	c.Data(httpStatus, "application/json; charset=utf-8", buf)
+	c.Abort()
 }
