@@ -26,9 +26,9 @@ func (u *User) CleanPassword() *User {
 }
 
 type UserQueryParam struct { // 查询条件
-	UserName   string `form:"userName"`   // 用户名
-	QueryValue string `form:"queryValue"` // 模糊查询
-	Status     int    `form:"status"`     // 用户状态
+	UserName   string `form:"user_name"`   // 用户名
+	QueryValue string `form:"query_value"` // 模糊查询
+	Status     int    `form:"status"`      // 用户状态
 }
 
 type UserQueryOptions struct {

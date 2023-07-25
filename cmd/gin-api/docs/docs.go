@@ -34,7 +34,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "用户名",
-                        "name": "userName",
+                        "name": "user_name",
                         "in": "query"
                     },
                     {
@@ -46,7 +46,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "模糊查询",
-                        "name": "queryValue",
+                        "name": "query_value",
                         "in": "query"
                     }
                 ],

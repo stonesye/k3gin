@@ -34,7 +34,7 @@ paths:
       parameters:
       - description: 用户名
         in: query
-        name: userName
+        name: user_name
         type: string
       - description: 用户状态(1，正常; 2，失效)
         in: query
@@ -42,7 +42,7 @@ paths:
         type: integer
       - description: 模糊查询
         in: query
-        name: queryValue
+        name: query_value
         type: string
       responses:
         "200":

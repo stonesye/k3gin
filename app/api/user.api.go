@@ -18,9 +18,9 @@ var UserApiSet = wire.NewSet(wire.Struct(new(UserApi), "*"))
 //
 //	@Summary	根据用户名或用户状态查询用户信息
 //	@Tags		UserQueryAPI
-//	@Param		userName	query		string				false	"用户名"
+//	@Param		user_name	query		string				false	"用户名"
 //	@Param		status		query		int					false	"用户状态(1，正常; 2，失效)"
-//	@Param		queryValue	query		string				false	"模糊查询"
+//	@Param		query_value query		string				false	"模糊查询"
 //	@Success	200			{object}	schema.ListResult	"用户列表"
 //	@Failure	400			{object}	schema.ErrorResult	"错误信息"
 //	@Router		/api/v1/user [get]
