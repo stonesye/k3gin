@@ -2,7 +2,9 @@ package errors
 
 import "fmt"
 
-// ResponseError 定义响应错误信息
+// 封装 Response 的数据
+
+// ResponseError 定义响应信息
 type ResponseError struct {
 	Code    int
 	Message string
@@ -10,7 +12,7 @@ type ResponseError struct {
 	ERR     error
 }
 
-// Error 被实现  ResponError 也是 error
+// Error接口被实现  *ResponseError 也是 error
 func (r *ResponseError) Error() string {
 	if r.ERR != nil {
 		return r.ERR.Error()
@@ -27,6 +29,7 @@ func UnWrapResponse(err error) *ResponseError {
 	return nil
 }
 
+// WrapResponse 封装ResponseError
 func WrapResponse(err error, code, status int, msg string, args ...interface{}) error {
 	res := &ResponseError{
 		Code:    code,
@@ -38,6 +41,7 @@ func WrapResponse(err error, code, status int, msg string, args ...interface{}) 
 	return res
 }
 
+// Wrap400Response 封装400状态码的ResponseError
 func Wrap400Response(err error, msg string, args ...interface{}) error {
 	res := &ResponseError{
 		Code:    0,
@@ -49,6 +53,7 @@ func Wrap400Response(err error, msg string, args ...interface{}) error {
 	return res
 }
 
+// Wrap500Response 封装500状态码的ResponseError
 func Wrap500Response(err error, msg string, args ...interface{}) error {
 	res := &ResponseError{
 		Code:    0,
@@ -60,6 +65,7 @@ func Wrap500Response(err error, msg string, args ...interface{}) error {
 	return res
 }
 
+// NewResponse 封装一个任意状态码的ResponseError, 但ResponseError.ERR = nil
 func NewResponse(code, status int, msg string, args ...interface{}) error {
 	res := &ResponseError{
 		Code:    code,
@@ -69,10 +75,12 @@ func NewResponse(code, status int, msg string, args ...interface{}) error {
 	return res
 }
 
+// New400Response 封装400状态码的ResponseError, 但ResponseError.ERR = nil
 func New400Response(msg string, args ...interface{}) error {
 	return NewResponse(0, 400, msg, args...)
 }
 
+// New500Response 封装500状态码的ResponseError, 但ResponseError.ERR = nil
 func New500Response(msg string, args ...interface{}) error {
 	return NewResponse(0, 500, msg, args)
 }

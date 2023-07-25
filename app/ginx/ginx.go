@@ -10,6 +10,8 @@ import (
 	"net/http"
 )
 
+// 封装HTTP/HTTPS协议请求数据的封装和Response返回对象
+
 const (
 	REQBODYKEY = "req-body"
 	RESBODYKEY = "res-body"
