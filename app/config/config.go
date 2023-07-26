@@ -62,6 +62,7 @@ type Config struct {
 	RunMode     string
 	WWW         string
 	Swagger     bool
+	Pprof       bool
 	PrintConfig bool
 	HTTP        HTTP
 	Log         Log

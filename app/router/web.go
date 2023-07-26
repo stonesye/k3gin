@@ -40,7 +40,9 @@ func InitGinEngine(r IRouter) *gin.Engine {
 		app.GET("swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
 
-	pprof.Register(app)
-
+	// 启用性能查看
+	if config.C.Pprof {
+		pprof.Register(app)
+	}
 	return app
 }
