@@ -41,6 +41,7 @@ func (r *Router) Register(e *gin.Engine) error {
 		guser := v1.Group("/user")
 		{
 			guser.GET("", r.UserAPI.Query)
+			guser.GET("get", r.UserAPI.Get)
 		}
 	}
 

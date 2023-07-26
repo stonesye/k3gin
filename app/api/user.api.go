@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
 	"k3gin/app/ginx"
+	"k3gin/app/httpx"
 	"k3gin/app/schema"
 	"k3gin/app/service"
 	"time"
@@ -11,6 +12,7 @@ import (
 
 type UserApi struct {
 	UserSrv *service.UserSrv
+	Client  *httpx.Client
 }
 
 var UserApiSet = wire.NewSet(wire.Struct(new(UserApi), "*"))
@@ -49,4 +51,9 @@ func (u *UserApi) Query(c *gin.Context) {
 		return
 	}
 	ginx.ResSuccess(c, result.Data, "[%v]user list success !", time.Now())
+}
+
+func (u *UserApi) Get(c *gin.Context) {
+	res := u.Client.Get("http://127.0.0.1:8081/api/v1/user", nil, nil)
+	ginx.ResSuccess(c, res, "ok")
 }

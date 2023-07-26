@@ -10,6 +10,7 @@ import (
 	"k3gin/app/api"
 	"k3gin/app/dao/user"
 	"k3gin/app/gormx"
+	"k3gin/app/httpx"
 	"k3gin/app/router"
 	"k3gin/app/service"
 )
@@ -27,8 +28,14 @@ func BuildInjector() (*Injector, func(), error) {
 	userSrv := &service.UserSrv{
 		UserRepo: userRepo,
 	}
+	client, cleanup2, err := httpx.InitHttp()
+	if err != nil {
+		cleanup()
+		return nil, nil, err
+	}
 	userApi := &api.UserApi{
 		UserSrv: userSrv,
+		Client:  client,
 	}
 	routerRouter := &router.Router{
 		UserAPI: userApi,
@@ -38,6 +45,7 @@ func BuildInjector() (*Injector, func(), error) {
 		Engine: engine,
 	}
 	return injector, func() {
+		cleanup2()
 		cleanup()
 	}, nil
 }
