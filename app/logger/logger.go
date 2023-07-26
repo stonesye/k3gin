@@ -6,6 +6,7 @@ import (
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/sirupsen/logrus"
 	"k3gin/app/config"
+	"k3gin/app/contextx"
 	"os"
 	"path/filepath"
 	"time"
@@ -29,109 +30,31 @@ func SetFormatter(format string) {
 	}
 }
 
-// 定义穿插在日志和Context中的标记的Key
+// 作为logrus中的KEY
 const (
-	TraceIDKey  = "trace_id"
-	UserIDKey   = "user_id"
-	UserNameKey = "user_name"
-	TagKey      = "tag"
-	StackKey    = "stack"
+	TraceIDKey = "trace_id"
+	UserIDKey  = "user_id"
+	TagKey     = "tag"
+	StackKey   = "stack"
 )
-
-// NewTraceIDContext 创建一个存放TraceID Context
-func NewTraceIDContext(ctx context.Context, traceID string) context.Context {
-	return context.WithValue(ctx, TraceIDKey, traceID)
-}
-
-// FromTraceIDContext 获取context中的tarce_id的值
-func FromTraceIDContext(ctx context.Context) string {
-	v := ctx.Value(TraceIDKey)
-	if v != nil {
-		if s, ok := v.(string); ok {
-			return s
-		}
-	}
-	return ""
-}
-
-func NewUserIDContext(ctx context.Context, userID uint64) context.Context {
-	return context.WithValue(ctx, UserIDKey, userID)
-}
-
-func FromUserIDContext(ctx context.Context) uint64 {
-	v := ctx.Value(UserIDKey)
-	if v != nil {
-		if s, ok := v.(uint64); ok {
-			return s
-		}
-	}
-
-	return 0
-}
-
-func NewUserNameContext(ctx context.Context, userName string) context.Context {
-	return context.WithValue(ctx, UserNameKey, userName)
-}
-
-func FromUserNameContext(ctx context.Context) string {
-	v := ctx.Value(UserNameKey)
-	if v != nil {
-		if s, ok := v.(string); ok {
-			return s
-		}
-	}
-	return ""
-}
-
-func NewTagContext(ctx context.Context, tag string) context.Context {
-	return context.WithValue(ctx, TagKey, tag)
-}
-
-func FromTagContext(ctx context.Context) string {
-	v := ctx.Value(TagKey)
-	if v != nil {
-		if s, ok := v.(string); ok {
-			return s
-		}
-	}
-	return ""
-}
-
-func NewStackContext(ctx context.Context, stack error) context.Context {
-	return context.WithValue(ctx, StackKey, stack)
-}
-
-func FromStackContext(ctx context.Context) error {
-	v := ctx.Value(StackKey)
-	if v != nil {
-		if s, ok := v.(error); ok {
-			return s
-		}
-	}
-	return nil
-}
 
 // WithContext 从ctx中把数据拿出来，封装成logrus的Fields, 这样后面再用logrus记录日志的时候，就会自动带上封装后的数据
 func WithContext(ctx context.Context) *Entry {
 	fields := logrus.Fields{}
 
-	if v := FromTraceIDContext(ctx); v != "" {
+	if v, e := contextx.FromTarceID(ctx); v != "" && e == true {
 		fields[TraceIDKey] = v
 	}
 
-	if v := FromUserIDContext(ctx); v != 0 {
+	if v := contextx.FromUserID(ctx); v != 0 {
 		fields[UserIDKey] = v
 	}
 
-	if v := FromUserNameContext(ctx); v != "" {
-		fields[UserNameKey] = v
-	}
-
-	if v := FromTagContext(ctx); v != "" {
+	if v, e := contextx.FromTag(ctx); v != "" && e == true {
 		fields[TagKey] = v
 	}
 
-	if v := FromStackContext(ctx); v != nil {
+	if v := contextx.FromStack(ctx); v != nil {
 		fields[StackKey] = fmt.Sprintf("%+v", v)
 	}
 
