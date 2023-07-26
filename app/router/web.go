@@ -18,6 +18,8 @@ func InitGinEngine(r IRouter) *gin.Engine {
 	// 允许访问的目录地址
 	prefixes := r.Prefixes()
 
+	app.Use(middleware.RecoveryMiddleware())
+
 	// 设置TarceID， 但是要将走静态的那些请求过滤掉
 	app.Use(middleware.TraceMiddleware(middleware.AllowPathPrefixNoSkipper(prefixes...)))
 

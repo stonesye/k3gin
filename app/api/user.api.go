@@ -48,6 +48,5 @@ func (u *UserApi) Query(c *gin.Context) {
 		ginx.ResError(c, err)
 		return
 	}
-
 	ginx.ResSuccess(c, result.Data, "[%v]user list success !", time.Now())
 }
