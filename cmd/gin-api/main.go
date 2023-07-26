@@ -66,11 +66,3 @@ func cmd(ctx context.Context) *cli.Command {
 		},
 	}
 }
-
-/**
-go run cmd/gin-api/main.go web -c ./configs/config.toml --www ./static
-swag init -g cmd/gin-api/main.go -o cmd/gin-api/docs
-# Or use Makefile: make swagger
-wire gen ./app
-# Or use Makefile: make wire
-*/

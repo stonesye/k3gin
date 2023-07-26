@@ -21,7 +21,7 @@ type Router struct {
 
 // Prefixes API允许访问的目录地址
 func (r *Router) Prefixes() []string {
-	return []string{"/api", "/swagger"}
+	return []string{"/api", "/swagger", "/debug/pprof"}
 }
 
 // Register 给GinEngine设置API路由

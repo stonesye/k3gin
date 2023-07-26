@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -38,6 +39,8 @@ func InitGinEngine(r IRouter) *gin.Engine {
 	if config.C.Swagger {
 		app.GET("swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
+
+	pprof.Register(app)
 
 	return app
 }
