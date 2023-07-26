@@ -23,7 +23,6 @@ func TraceMiddleware(prefixes func(*gin.Context) bool) gin.HandlerFunc {
 
 		ctx := contextx.NewTraceID(c.Request.Context(), traceID)
 		c.Request = c.Request.WithContext(ctx)
-
 		c.Writer.Header().Set("X-Trace-Id", traceID)
 		c.Next()
 	}
