@@ -2,85 +2,80 @@ package main
 
 import (
 	"fmt"
-	"io"
-	"net/http"
-	"time"
+	"github.com/google/wire"
 )
 
-type Config struct {
-	Name     string
-	FilePath string
-	Host     string
+// Monster 怪兽
+type Monster struct {
+	Name string
 }
 
-func WithHost(s string) func(*Config) {
-	return func(c *Config) {
-		c.Host = s
-	}
+// NewMonster 创建怪兽
+func NewMonster() Monster {
+	return Monster{Name: "kitty"}
 }
 
-func WithName(name string) func(*Config) {
-	return func(c *Config) {
-		c.Name = name
-	}
+type Player struct {
+	Name string
 }
 
-func WithFilePath(s string) func(*Config) {
-	return func(c *Config) {
-		c.FilePath = s
-	}
+// NewPlayer 创建勇士
+func NewPlayer(name string) (Player, error) {
+	return Player{Name: name}, nil
 }
 
-func New(opt ...func(*Config)) *Config {
-	var c Config
-	for _, o := range opt {
-		o(&c)
-	}
-	return &c
+// Mission 勇士打怪兽
+type Mission struct {
+	Player  Player
+	Monster Monster
 }
 
-func (c *Config) Run() {
-	fmt.Println(c.FilePath, c.Name, c.Host)
+// NewMission 创建一个勇士打怪兽的任务
+func NewMission(p Player, m Monster) Mission {
+	return Mission{p, m}
 }
 
-func main() {
-	/**
-	c := New(WithName("lei"), WithFilePath("/config"), WithHost("127.0.0.1"))
-	c.Run()
-	*/
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", func(resp http.ResponseWriter, request *http.Request) {
-		fmt.Println("got / request")
-		io.WriteString(resp, "this is my web\n")
-	})
-
-	mux.HandleFunc("/go", func(resp http.ResponseWriter, request *http.Request) {
-		fmt.Println("go /go request")
-		io.WriteString(resp, "this is go reqeust")
-	})
-
-	srv := &http.Server{
-		Addr:         "0.0.0.0:8081",
-		Handler:      mux,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 30 * time.Second,
-		IdleTimeout:  30 * time.Second,
-	}
-
-	go func() {
-		fmt.Println("开始监听.....")
-		err := srv.ListenAndServe()
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Println("结束监听....")
-
-	}()
-
-	fmt.Println("主协程......1")
-	time.Sleep(time.Second * 20)
-	fmt.Println("住协程......2")
-
+func (m Mission) Start() {
+	fmt.Printf("勇士 %v 打怪兽 %v\n", m.Player.Name, m.Monster.Name)
 }
+
+var MPset = wire.NewSet(NewMonster, NewPlayer)
+
+type EndingA struct {
+	Player  Player
+	Monster Monster
+}
+
+func (e EndingA) Appear() {
+	fmt.Printf("%s defeats %s, world peace!\n", e.Player.Name, e.Monster.Name)
+}
+
+type EndingB struct {
+	Player  Player
+	Monster Monster
+}
+
+func (e EndingB) Appear() {
+	fmt.Printf("%s defeats %s, but become monster, world darker!\n", e.Player.Name, e.Monster.Name)
+}
+
+type Person struct {
+	Name string
+	Age  int
+}
+
+type PersonI interface {
+	GetName() string
+}
+
+func (p Person) GetName() string {
+	return p.Name
+}
+
+var PSet = wire.NewSet(wire.Struct(new(Person), "*"), wire.Bind(new(PersonI), new(Person)))
+
+/**
+var EndingASet = wire.NewSet(MPset, wire.Struct(new(EndingA), "*"))
+var EndingBSet = wire.NewSet(MPset, wire.Struct(new(EndingB), "*"))
+var MissionSet = wire.NewSet(wire.Struct(new(Mission), "*"))
+*/

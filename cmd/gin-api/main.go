@@ -20,9 +20,9 @@ import (
 //	@license.name	Apache 2.0
 //	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
 
-//	@schemes	http https
-//	@host		127.0.0.1:8081
-//	@BasePath	/
+// @schemes	http https
+// @host		127.0.0.1:8081
+// @BasePath	/
 func main() {
 
 	// 将 tag 封装到 自定义的 context 里面
@@ -70,9 +70,7 @@ func cmd(ctx context.Context) *cli.Command {
 /**
 go run cmd/gin-api/main.go web -c ./configs/config.toml --www ./static
 swag init -g cmd/gin-api/main.go -o cmd/gin-api/docs
-
-
 # Or use Makefile: make swagger
-wire gen ./internal/app
+wire gen ./app
 # Or use Makefile: make wire
 */
