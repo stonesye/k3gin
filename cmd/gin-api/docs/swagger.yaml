@@ -1,20 +1,20 @@
 basePath: /
 definitions:
-  schema.ErrorItem:
+  schema.ErrorResult:
     properties:
       code:
         type: integer
+      error: {}
       message:
         type: string
     type: object
-  schema.ErrorResult:
+  schema.SuccessResult:
     properties:
-      error:
-        $ref: '#/definitions/schema.ErrorItem'
-    type: object
-  schema.ListResult:
-    properties:
-      list: {}
+      code:
+        type: integer
+      data: {}
+      message:
+        type: string
     type: object
 host: 127.0.0.1:8081
 info:
@@ -48,7 +48,7 @@ paths:
         "200":
           description: 用户列表
           schema:
-            $ref: '#/definitions/schema.ListResult'
+            $ref: '#/definitions/schema.SuccessResult'
         "400":
           description: 错误信息
           schema:

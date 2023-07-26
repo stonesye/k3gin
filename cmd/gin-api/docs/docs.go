@@ -54,7 +54,7 @@ const docTemplate = `{
                     "200": {
                         "description": "用户列表",
                         "schema": {
-                            "$ref": "#/definitions/schema.ListResult"
+                            "$ref": "#/definitions/schema.SuccessResult"
                         }
                     },
                     "400": {
@@ -68,29 +68,28 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "schema.ErrorItem": {
+        "schema.ErrorResult": {
             "type": "object",
             "properties": {
                 "code": {
                     "type": "integer"
                 },
+                "error": {},
                 "message": {
                     "type": "string"
                 }
             }
         },
-        "schema.ErrorResult": {
+        "schema.SuccessResult": {
             "type": "object",
             "properties": {
-                "error": {
-                    "$ref": "#/definitions/schema.ErrorItem"
+                "code": {
+                    "type": "integer"
+                },
+                "data": {},
+                "message": {
+                    "type": "string"
                 }
-            }
-        },
-        "schema.ListResult": {
-            "type": "object",
-            "properties": {
-                "list": {}
             }
         }
     }
