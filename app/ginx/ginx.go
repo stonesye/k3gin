@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"k3gin/app/contextx"
 	"k3gin/app/errors"
 	"k3gin/app/logger"
 	"k3gin/app/schema"
@@ -66,7 +67,7 @@ func ResError(c *gin.Context, err error, httpStatus ...int) {
 		if status := res.Status; status >= 400 && status < 500 {
 			logger.WithContext(c).Warnf(err.Error())
 		} else if status >= 500 {
-			logger.WithContext(logger.NewStackContext(c, err)).Errorf(err.Error())
+			logger.WithContext(contextx.NewStack(c, err)).Errorf(err.Error())
 		}
 	}
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/urfave/cli/v2"
 	"k3gin/app"
+	"k3gin/app/contextx"
 	"k3gin/app/logger"
 	_ "k3gin/cmd/gin-api/docs"
 	"os"
@@ -26,7 +27,7 @@ import (
 func main() {
 
 	// 将 tag 封装到 自定义的 context 里面
-	ctx := logger.NewTagContext(context.Background(), "__main__")
+	ctx := contextx.NewTag(context.Background(), "__main__")
 
 	// 初始化CLI命令行对象
 	cliApp := cli.NewApp()
