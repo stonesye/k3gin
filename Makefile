@@ -18,15 +18,12 @@ build:
 	@go build -ldflags "-w -s -X main.VERSION=$(RELEASE_TAG)" -o $(SERVER_BIN) ./cmd/${APP}
 
 start:
-# go run cmd/gin-api/main.go web -c ./configs/config.toml --www ./static
 	@go run -ldflags "-X main.VERSION=$(RELEASE_TAG)" ./cmd/${APP}/main.go web -c ./configs/config.toml -w ./static
 
 swagger:
-# swag init -g cmd/gin-api/main.go -o cmd/gin-api/docs
 	@swag init --parseDependency --generalInfo ./cmd/${APP}/main.go --output ./cmd/${APP}/docs
 
 wire:
-# wire gen ./app
 	@wire gen ./app
 
 test:
@@ -37,5 +34,5 @@ clean:
 
 pack: build
 	rm -rf $(RELEASE_ROOT) && mkdir -p $(RELEASE_SERVER)
-	cp -r $(SERVER_BIN) configs $(RELEASE_SERVER)
+	cp -r $(SERVER_BIN) configs static $(RELEASE_SERVER)
 	cd $(RELEASE_ROOT) && tar -cvf $(APP).tar ${APP} && rm -rf ${APP}

@@ -54,13 +54,13 @@ const docTemplate = `{
                     "200": {
                         "description": "用户列表",
                         "schema": {
-                            "$ref": "#/definitions/schema.SuccessResult"
+                            "$ref": "#/definitions/k3gin_app_schema.SuccessResult"
                         }
                     },
                     "400": {
                         "description": "错误信息",
                         "schema": {
-                            "$ref": "#/definitions/schema.ErrorResult"
+                            "$ref": "#/definitions/k3gin_app_schema.ErrorResult"
                         }
                     }
                 }
@@ -68,7 +68,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "schema.ErrorResult": {
+        "k3gin_app_schema.ErrorResult": {
             "type": "object",
             "properties": {
                 "code": {
@@ -80,7 +80,7 @@ const docTemplate = `{
                 }
             }
         },
-        "schema.SuccessResult": {
+        "k3gin_app_schema.SuccessResult": {
             "type": "object",
             "properties": {
                 "code": {

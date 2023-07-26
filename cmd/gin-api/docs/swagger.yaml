@@ -1,6 +1,6 @@
 basePath: /
 definitions:
-  schema.ErrorResult:
+  k3gin_app_schema.ErrorResult:
     properties:
       code:
         type: integer
@@ -8,7 +8,7 @@ definitions:
       message:
         type: string
     type: object
-  schema.SuccessResult:
+  k3gin_app_schema.SuccessResult:
     properties:
       code:
         type: integer
@@ -48,11 +48,11 @@ paths:
         "200":
           description: 用户列表
           schema:
-            $ref: '#/definitions/schema.SuccessResult'
+            $ref: '#/definitions/k3gin_app_schema.SuccessResult'
         "400":
           description: 错误信息
           schema:
-            $ref: '#/definitions/schema.ErrorResult'
+            $ref: '#/definitions/k3gin_app_schema.ErrorResult'
       summary: 根据用户名或用户状态查询用户信息
       tags:
       - UserQueryAPI
