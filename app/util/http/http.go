@@ -19,8 +19,8 @@ type Request struct {
 }
 
 type Response struct {
-	StatusCode int
-	Body       string
+	Status int
+	Body   string
 }
 
 type HttpClient struct {
@@ -160,7 +160,7 @@ func httpRequest(req Request, resp *Response) (err error) {
 	if err != nil {
 		panic(err)
 	}
-	resp.StatusCode = response.StatusCode
+	resp.Status = response.StatusCode
 	resp.Body = string(body)
 
 	return err
