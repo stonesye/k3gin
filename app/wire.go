@@ -13,14 +13,6 @@ import (
 	"k3gin/app/service"
 )
 
-/**
-func TestInjector(name string, age int) (*util.Person, func(), error) {
-	wire.Build(util.PSet)
-
-	return new(util.Person), nil, nil
-}
-*/
-
 func BuildInjector() (*Injector, func(), error) {
 	wire.Build(
 		httpx.InitHttp,
