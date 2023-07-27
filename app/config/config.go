@@ -66,13 +66,13 @@ type Config struct {
 	PrintConfig bool
 	HTTP        HTTP
 	Log         Log
-	Redis       Redis
 	CORS        CORS
 	GZIP        GZIP
 	SESSION     SESSION
 	Gorm        Gorm
 	RMySQL      MySQL
 	WMySQL      MySQL
+	Redis       Redis
 }
 
 type SESSION struct {
@@ -101,6 +101,8 @@ type Log struct {
 type Redis struct {
 	Addr     string
 	Password string
+	DB       int
+	Prefix   string
 }
 
 type CORS struct {

@@ -49,6 +49,10 @@ RotationTime = 24
 Addr = "127.0.0.1:6379"
 # 密码
 Password = ""
+# DB
+DB = 1
+# 前缀
+Prefix = ""
 
 [CORS]
 # 是否启用
