@@ -7,7 +7,7 @@ import (
 
 var sf *sonyflake.Sonyflake
 
-func init() {
+func Init() {
 	sf = sonyflake.NewSonyflake(sonyflake.Settings{
 		StartTime: time.Date(2021, 7, 28, 0, 0, 0, 0, time.UTC),
 	})
