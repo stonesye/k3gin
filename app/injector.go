@@ -7,7 +7,7 @@ import (
 	"k3gin/app/httpx"
 )
 
-var InjectorSet = wire.NewSet(wire.Struct(new(Injector), "*"))
+var InjectorSet = wire.NewSet(wire.Struct(new(Injector), "*"), httpx.InitHttp, redisx.RedisStoreSet)
 
 type Injector struct {
 	Engine     *gin.Engine
