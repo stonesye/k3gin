@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-redis/redis"
+	"github.com/google/wire"
+	"k3gin/app/config"
 	"time"
 )
 
@@ -38,17 +40,27 @@ func WihtPrefix(prefix Prefix) func(*RedisConfig) {
 	}
 }
 
-func NewRedisStore(options ...func(*RedisConfig)) (*Store, func(), error) {
+var RedisStoreSet = wire.NewSet(InitRedisStore, wire.Bind(new(Storer), new(*Store)))
 
+func InitRedisStore() (*Store, func(), error) {
+	cli := newRedisClient(config.C.Redis.Addr, config.C.Redis.Password)
+	return &Store{cli: cli, prefix: string(config.C.Redis.Prefix)}, func() {}, nil
+}
+
+func NewRedisStore(options ...func(*RedisConfig)) *Store {
 	var redisCfg = &RedisConfig{}
-
 	for _, option := range options {
 		option(redisCfg)
 	}
+	cli := newRedisClient(string(redisCfg.Addr), string(redisCfg.Password))
+	return &Store{cli: cli, prefix: string(redisCfg.Prefix)}
+}
 
-	cli := redis.NewClient(&redis.Options{
-		Addr:     string(redisCfg.Addr),
-		Password: string(redisCfg.Password),
+func newRedisClient(addr string, password string) *redis.Client {
+
+	return redis.NewClient(&redis.Options{
+		Addr:     addr,
+		Password: password,
 
 		DialTimeout:  time.Second * 5, //闲置重新建立连接数时间 默认5s
 		ReadTimeout:  time.Second * 3, //设置读超时时间,默认3s
@@ -59,9 +71,6 @@ func NewRedisStore(options ...func(*RedisConfig)) (*Store, func(), error) {
 		PoolTimeout:  time.Second * 4, //所有的连接打满后，请求超时时间 Default is ReadTimeout + 1 second
 		IdleTimeout:  time.Minute * 5, //闲置请求超时时间， Default is 5 minutes. -1 disables idle timeout check.
 	})
-	return &Store{cli: cli, prefix: string(redisCfg.Prefix)}, func() {
-		cli.Close()
-	}, nil
 }
 
 type Store struct {

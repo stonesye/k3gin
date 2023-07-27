@@ -8,6 +8,7 @@ package app
 
 import (
 	"k3gin/app/api"
+	"k3gin/app/cache/redisx"
 	"k3gin/app/dao/user"
 	"k3gin/app/gormx"
 	"k3gin/app/httpx"
@@ -41,10 +42,19 @@ func BuildInjector() (*Injector, func(), error) {
 		UserAPI: userApi,
 	}
 	engine := router.InitGinEngine(routerRouter)
+	store, cleanup3, err := redisx.InitRedisStore()
+	if err != nil {
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
 	injector := &Injector{
-		Engine: engine,
+		Engine:     engine,
+		HttpClient: client,
+		RedisStore: store,
 	}
 	return injector, func() {
+		cleanup3()
 		cleanup2()
 		cleanup()
 	}, nil

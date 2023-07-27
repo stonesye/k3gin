@@ -12,5 +12,5 @@ var InjectorSet = wire.NewSet(wire.Struct(new(Injector), "*"))
 type Injector struct {
 	Engine     *gin.Engine
 	HttpClient *httpx.Client
-	RedisStore *redisx.Store
+	RedisStore redisx.Storer
 }

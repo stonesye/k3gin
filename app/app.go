@@ -107,6 +107,7 @@ func Init(ctx context.Context, opts ...func(*options)) (func(), error) {
 		return nil, err
 	}
 
+	// 开协程 监听HTTP/HTTPS
 	httpServerCleanFunc := InitHttpServer(ctx, injector.Engine)
 
 	return func() {
