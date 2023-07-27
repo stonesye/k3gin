@@ -1,0 +1,5 @@
+package redisx
+
+func initRedisConnection() {
+
+}
