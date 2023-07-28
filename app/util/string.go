@@ -12,6 +12,7 @@ const (
 	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
 )
 
+// 反转string字符串
 func ReverseString(s string) string {
 	l := len(s)
 	buf := make([]byte, l)
@@ -22,6 +23,7 @@ func ReverseString(s string) string {
 	return string(buf)
 }
 
+// 随机字符串
 func RandString(n int) string {
 	var src = rand.NewSource(time.Now().UnixNano())
 
