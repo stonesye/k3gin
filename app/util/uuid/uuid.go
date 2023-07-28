@@ -15,6 +15,6 @@ func MustUUID() uuid.UUID {
 	return uuid
 }
 
-func MustStrig() string {
+func MustString() string {
 	return MustUUID().String()
 }

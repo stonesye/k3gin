@@ -12,8 +12,8 @@ var (
 )
 
 func NewTraceID() string {
-	return fmt.Sprintf("trace-id-%d-%s-%d",
+	return fmt.Sprintf("traceID-%d-%s-%d",
 		os.Getpid(),
-		time.Now().Format("2006.01.02.15.04.05.999"),
+		time.Now().Format("20060102150405.999"),
 		atomic.AddUint64(&incrNum, 1))
 }
