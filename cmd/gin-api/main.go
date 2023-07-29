@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/urfave/cli/v2"
 	"k3gin/app"
 	"k3gin/app/contextx"
@@ -35,7 +36,8 @@ func main() {
 	cliApp.Version = "1.0.1"
 	cliApp.Usage = "K3-GIN based on gin + gorm + wire + logrus + rotatelogs."
 	cliApp.Commands = []*cli.Command{
-		cmd(ctx),
+		cmdWeb(ctx),
+		cmdCron(ctx),
 	}
 
 	// 命令行包cli 的Run函数 其实是执行 Commands 下所有的 cli.Command 中的 Action 指定的函数
@@ -44,7 +46,26 @@ func main() {
 	}
 }
 
-func cmd(ctx context.Context) *cli.Command {
+func cmdCron(ctx context.Context) *cli.Command {
+	return &cli.Command{
+		Name:  "cron",
+		Usage: "Run cron server group",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:     "conf",
+				Aliases:  []string{"c"}, // 别名
+				Usage:    "App configuration file(.json, .yaml, .toml)",
+				Required: true, // 是否一定要指定 --conf 或 -c
+			},
+		},
+		Action: func(c *cli.Context) error {
+			fmt.Println("This is crontab action")
+			return nil
+		},
+	}
+}
+
+func cmdWeb(ctx context.Context) *cli.Command {
 	return &cli.Command{
 		Name:  "web",
 		Usage: "Run http server group",
