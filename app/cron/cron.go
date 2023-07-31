@@ -39,7 +39,7 @@ type Option func(*options)
 
 type Cron struct {
 	V3Cron      *v3cron.Cron
-	Middlewares []cronctx.HandleFunc
+	Middlewares []cronctx.HandleFunc // 每个Task/Job都需要执行的全局中间件
 	Db          *gormx.DB
 	Redis       *redisx.Store
 	HttpClient  *httpx.Client
@@ -86,8 +86,21 @@ func (cron *Cron) registerMiddleware() {
 	cron.Use(middleware.RecoveryCron())
 }
 
-func (cron *Cron) AddJob() {
+// AddJob 每个Job都需要生成一个新的context ，每个context都只存储一个时间节点要执行的所有middleware, 每个时间节点可能要执行多个middleware
+func (cron *Cron) AddJob(name string, spec string, handles ...cronctx.HandleFunc) error {
+	middlewares := make([]cronctx.HandleFunc, len(cron.Middlewares)+len(handles))
+	copy(middlewares, cron.Middlewares)
+	copy(middlewares[len(cron.Middlewares):], handles)
 
+	f := func() {
+		ctx := cronctx.NewCronContext(name, spec, middlewares)
+		ctx.Next()
+	}
+
+	job := v3cron.SkipIfStillRunning(v3cron.DefaultLogger)(newJob(f))
+	_, err := cron.V3Cron.AddJob(spec, job)
+
+	return err
 }
 
 func Run(ctx context.Context, opts ...Option) error {
@@ -119,6 +132,8 @@ func Run(ctx context.Context, opts ...Option) error {
 	cron.registerMiddleware()
 
 	// # 添加定时任务
+	cron.AddJob("Task1", "*/2 * * * * ", task1)
+	cron.AddJob("Task2", "*/2 * * * *", middleware.TimeoutCron(5*time.Second), task2)
 
 	// # goroutine 执行定时任务
 	cron.V3Cron.Start()
