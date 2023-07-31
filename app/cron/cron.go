@@ -1,6 +1,9 @@
 package cron
 
-import "context"
+import (
+	"context"
+	"k3gin/app/config"
+)
 
 type options struct {
 	conf string // 基础配置信息
@@ -23,6 +26,15 @@ type Option func(*options)
 
 // Run 用于处理 CRONTab的任务
 func Run(ctx context.Context, opts ...Option) error {
+	var option options
+
+	for _, opt := range opts {
+		opt(&option)
+	}
+
+	// 初始化Config
+
+	config.MustLoad()
 
 	return nil
 }
