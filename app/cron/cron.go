@@ -5,6 +5,8 @@ import (
 	"k3gin/app/config"
 	"k3gin/app/logger"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 type options struct {
@@ -35,6 +37,14 @@ type Option func(*options)
 
 // Run 用于处理CronTab 的任务
 func Run(ctx context.Context, opts ...Option) error {
+	// 创建新号源， 控制cron的运行， 确保只有接触到特殊的信号以后， 主协程才会退出，子协程才会被回收
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGINT, syscall.SIGTERM)
+
+	return nil
+}
+
+func InitCron(ctx context.Context, opts ...Option) error {
 	var o options
 
 	for _, opt := range opts {
