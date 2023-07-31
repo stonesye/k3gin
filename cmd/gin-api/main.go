@@ -11,6 +11,8 @@ import (
 	"os"
 )
 
+const VERSION = "1.0.1"
+
 //	@title			k3gin
 //	@version		1.0.1
 //	@description	RBAC scaffolding based on GIN + GORM + WIRE.
@@ -65,7 +67,11 @@ func cmdCron(ctx context.Context) *cli.Command {
 			},
 		},
 		Action: func(c *cli.Context) error {
-			return cron.Run(ctx, cron.WithConf(c.String("conf")), cron.WithCron(c.String("cron")))
+			return cron.Run(ctx,
+				cron.WithConf(c.String("conf")),
+				cron.WithCron(c.String("cron")),
+				cron.WithVersion(VERSION),
+			)
 		},
 	}
 }
@@ -89,7 +95,11 @@ func cmdWeb(ctx context.Context) *cli.Command {
 		},
 		Action: func(c *cli.Context) error {
 			// c.String 获取命令行cli.StringFlag中指定的Name对应的Value
-			return app.Run(ctx, app.SetConfigFile(c.String("conf")), app.SetWWWDir(c.String("www")))
+			return app.Run(ctx,
+				app.SetConfigFile(c.String("conf")),
+				app.SetWWWDir(c.String("www")),
+				app.SetVersion(VERSION),
+			)
 		},
 	}
 }

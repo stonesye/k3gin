@@ -17,6 +17,7 @@ import (
 type options struct {
 	ConfigFile string // 配置文件地址
 	WWWDir     string // 静态文件地址
+	Version    string // 当前版本
 }
 
 func SetConfigFile(s string) func(*options) {
@@ -28,6 +29,12 @@ func SetConfigFile(s string) func(*options) {
 func SetWWWDir(s string) func(*options) {
 	return func(o *options) {
 		o.WWWDir = s
+	}
+}
+
+func SetVersion(version string) func(*options) {
+	return func(o *options) {
+		o.Version = version
 	}
 }
 
@@ -93,7 +100,7 @@ func Init(ctx context.Context, opts ...func(*options)) (func(), error) {
 	config.PrintWithJSON()
 
 	// 利用默认的logrus来打印日志, 并没有利用到定制化的logrus, 因为还没有调用InitLogger
-	logger.WithContext(ctx).Printf("Start server,#run_mode %s,#pid %d", config.C.RunMode, os.Getpid())
+	logger.WithContext(ctx).Printf("Start #WEB# server,#run_mode %s,#pid %d,#version: %s", config.C.RunMode, os.Getpid(), o.Version)
 
 	// 初始化logrus 定制化日志
 	loggerCleanFunc, err := logger.InitLogger()
