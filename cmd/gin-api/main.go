@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/urfave/cli/v2"
 	"k3gin/app"
 	"k3gin/app/contextx"
+	"k3gin/app/cron"
 	"k3gin/app/logger"
 	_ "k3gin/cmd/gin-api/docs"
 	"os"
@@ -57,10 +57,15 @@ func cmdCron(ctx context.Context) *cli.Command {
 				Usage:    "App configuration file(.json, .yaml, .toml)",
 				Required: true, // 是否一定要指定 --conf 或 -c
 			},
+			&cli.StringFlag{
+				Name:     "corn",
+				Aliases:  []string{"corn"},
+				Usage:    "App configuration file(.json, .yaml, .toml)",
+				Required: true,
+			},
 		},
 		Action: func(c *cli.Context) error {
-			fmt.Println("This is crontab action")
-			return nil
+			return cron.Run(ctx, cron.WithConf(c.String("conf")), cron.WithCron(c.String("cron")))
 		},
 	}
 }
