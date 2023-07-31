@@ -5,8 +5,8 @@ import "context"
 type HandleFunc func(*Context)
 
 type Context struct {
-	context.Context                        // 系统的Context
-	Name            string                 //任务名
+	context.Context                        // 系统的Context, 匿名到自定义的Context, 继承了系统Context的所有函数
+	Name            string                 // 任务名
 	Spec            string                 // 任务表达式
 	Chain           []HandleFunc           // 中间件调用链
 	ChainIndex      int                    // 当前chain执行到哪里
@@ -33,9 +33,10 @@ func (c *Context) Get(k string) (v interface{}, exist bool) {
 	return
 }
 
-func (c *Context) Value(k interface{}) (v interface{}) {
+func (c *Context) Value(k interface{}) (v interface{}) { // 重写context.Context 的value
 	if s, ok := k.(string); ok {
 		v, _ = c.KeyValues[s]
+		return v
 	}
-	return
+	return c.Context.Value(k)
 }

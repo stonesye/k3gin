@@ -1,28 +1,57 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 )
 
-func main() {
+type Obj interface {
+	Say()
+}
 
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT)
+type Person struct {
+	Name string
+	Age  int
+}
 
-	for true {
-		s := <-c
+func (p Person) Say() {
+	fmt.Println("Say ", p.Name)
+}
 
-		switch s {
-		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
-			return
-		case syscall.SIGHUP:
-		default:
-			fmt.Println("默认....")
-		}
-		time.Sleep(1 * time.Second)
+type Man struct {
+	Person
+	Sex bool
+}
+
+func (m Man) Say() {
+	fmt.Println("Say", m.Name)
+	m.Person.Say()
+}
+
+func Test(o Obj) {
+	var person Person
+	var man Man
+	if s, ok := o.(Person); ok {
+		person = s
+		person.Say()
+	} else if s, ok := o.(Man); ok {
+		man = s
+		man.Say()
 	}
+
+}
+
+func main() {
+	fmt.Println("aaaaaa")
+	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*5)
+	fmt.Println("bbbbb")
+	defer cancelFunc()
+	fmt.Println("ctx", ctx)
+
+	select {
+	case <-ctx.Done():
+		fmt.Println("收到信号")
+	}
+	fmt.Println(time.Now())
 }
