@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"k3gin/app/contextx"
-	cronContext "k3gin/app/cron/context"
+	cronCtx "k3gin/app/cron/context"
 	"k3gin/app/logger"
 	"runtime"
 )
@@ -14,9 +14,9 @@ import (
 集中处理Cron的异常错误
 */
 
-func RecoveryCron() cronContext.HandleFunc {
+func RecoveryCron() cronCtx.HandleFunc {
 
-	return func(c *cronContext.Context) {
+	return func(c *cronCtx.CronContext) {
 		defer func() {
 			if err := recover(); err != nil {
 				stack := stack(3)

@@ -27,7 +27,7 @@ swagger:
 	@swag init --parseDependency --generalInfo ./cmd/${APP}/main.go --output ./cmd/${APP}/docs
 
 wire:
-	@wire gen ./app
+	@wire gen ./app && wire gen ./app/cron
 
 test:
 	cd ./app/test && go test -v

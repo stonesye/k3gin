@@ -2,9 +2,9 @@ package context
 
 import "context"
 
-type HandleFunc func(*Context)
+type HandleFunc func(*CronContext)
 
-type Context struct {
+type CronContext struct {
 	context.Context                        // 系统的Context, 匿名到自定义的Context, 继承了系统Context的所有函数
 	Name            string                 // 任务名
 	Spec            string                 // 任务表达式
@@ -14,7 +14,7 @@ type Context struct {
 }
 
 // Next 模拟调用下一个中间件middleware
-func (c *Context) Next() {
+func (c *CronContext) Next() {
 	curIndex := c.ChainIndex
 	if curIndex >= len(c.Chain) { // 没有下一个middleware
 		return
@@ -24,16 +24,16 @@ func (c *Context) Next() {
 	c.Chain[curIndex](c) // 执行下一个middleware
 }
 
-func (c *Context) Set(k string, v interface{}) {
+func (c *CronContext) Set(k string, v interface{}) {
 	c.KeyValues[k] = v
 }
 
-func (c *Context) Get(k string) (v interface{}, exist bool) {
+func (c *CronContext) Get(k string) (v interface{}, exist bool) {
 	v, exist = c.KeyValues[k]
 	return
 }
 
-func (c *Context) Value(k interface{}) (v interface{}) { // 重写context.Context 的value
+func (c *CronContext) Value(k interface{}) (v interface{}) { // 重写context.Context 的value
 	if s, ok := k.(string); ok {
 		v, _ = c.KeyValues[s]
 		return v
