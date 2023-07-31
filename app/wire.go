@@ -5,7 +5,9 @@ package app
 
 import (
 	"github.com/google/wire"
+	v3cron "github.com/robfig/cron/v3"
 	"k3gin/app/api"
+	"k3gin/app/cron"
 	"k3gin/app/dao/user"
 	"k3gin/app/gormx"
 	"k3gin/app/router"
@@ -23,4 +25,13 @@ func BuildInjector() (*Injector, func(), error) {
 		InjectorSet,
 	)
 	return new(Injector), nil, nil
+}
+
+func BuildCron(opts ...v3cron.Option) (*cron.Cronx, func(), error) {
+	wire.Build(
+		v3cron.New,
+		cron.CronxSet,
+		gormx.InitGormDB(),
+	)
+	return new(cron.Cronx), nil, nil
 }

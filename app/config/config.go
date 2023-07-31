@@ -73,6 +73,11 @@ type Config struct {
 	RMySQL      MySQL
 	WMySQL      MySQL
 	Redis       Redis
+	Cron        Cron
+}
+
+type Cron struct {
+	WaitGraceExit int
 }
 
 type SESSION struct {

@@ -35,7 +35,7 @@ func main() {
 	// 初始化CLI命令行对象
 	cliApp := cli.NewApp()
 	cliApp.Name = "k3-gin"
-	cliApp.Version = "1.0.1"
+	cliApp.Version = VERSION
 	cliApp.Usage = "K3-GIN based on gin + gorm + wire + logrus + rotatelogs."
 	cliApp.Commands = []*cli.Command{
 		cmdWeb(ctx),

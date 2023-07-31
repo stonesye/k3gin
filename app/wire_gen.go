@@ -7,8 +7,10 @@
 package app
 
 import (
+	"github.com/robfig/cron/v3"
 	"k3gin/app/api"
 	"k3gin/app/cache/redisx"
+	cron2 "k3gin/app/cron"
 	"k3gin/app/dao/user"
 	"k3gin/app/gormx"
 	"k3gin/app/httpx"
@@ -57,5 +59,14 @@ func BuildInjector() (*Injector, func(), error) {
 		cleanup3()
 		cleanup2()
 		cleanup()
+	}, nil
+}
+
+func BuildCron(opts ...cron.Option) (*cron2.Cronx, func(), error) {
+	cronCron := cron.New(opts...)
+	cronx := &cron2.Cronx{
+		Cron: cronCron,
+	}
+	return cronx, func() {
 	}, nil
 }
