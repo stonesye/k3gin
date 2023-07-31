@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/koding/multiconfig"
-	cronctx "k3gin/app/cron/context"
 	"os"
 	"strings"
 	"sync"
@@ -79,13 +78,6 @@ type Config struct {
 
 type Cron struct {
 	WaitGraceExit int
-	Jobs          []Job
-}
-
-type Job struct {
-	Name string
-	Spec string
-	Task cronctx.HandleFunc
 }
 
 type SESSION struct {

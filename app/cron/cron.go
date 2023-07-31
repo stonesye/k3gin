@@ -2,7 +2,6 @@ package cron
 
 import (
 	"context"
-	"fmt"
 	"github.com/google/wire"
 	v3cron "github.com/robfig/cron/v3"
 	"k3gin/app/cache/redisx"
@@ -48,7 +47,7 @@ type Cron struct {
 
 var CronSet = wire.NewSet(wire.Struct(new(Cron), "Db", "Redis", "HttpClient"), gormx.InitGormDB, redisx.RedisStoreSet, httpx.InitHttp)
 
-func (cron *Cron) waitGraceExit() int {
+func (cron *Cron) waitGraceExit(ctx context.Context) int {
 	stat := 0
 
 	// 创建新号源， 控制cron的运行， 确保只有接触到特殊的信号以后， 主协程才会退出，子协程才会被回收
@@ -56,26 +55,27 @@ func (cron *Cron) waitGraceExit() int {
 	signal.Notify(sig, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGINT, syscall.SIGTERM)
 
 	for {
-		_, _ = fmt.Fprintln(os.Stdout, "等待CRON终止信号...")
+		logger.WithContext(ctx).Info("Waiting signal exiting cron ... ")
 
 		s := <-sig
 
 		switch s {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
-			_, _ = fmt.Fprintf(os.Stdout, "收到信号: %s , CRON 服务正在退出...\n", s.String())
+			logger.WithContext(ctx).Infof("Received signal : %s, cron server exiting ...", s.String())
+
 			select {
 			case <-time.NewTimer(time.Duration(config.C.Cron.WaitGraceExit) * time.Millisecond).C: // 最多等待的时间
 			case <-cron.V3Cron.Stop().Done(): // 等待所有的定时任务结束
 				stat = 0
 			}
 			return stat // 退出函数
+
 		case syscall.SIGHUP:
-			stat = 1
 		default:
+			stat = 1
+			return stat
 		}
 	}
-
-	return stat
 }
 
 func (cron *Cron) Use(handleFunc cronctx.HandleFunc) {
@@ -86,6 +86,10 @@ func (cron *Cron) registerMiddleware() {
 	cron.Use(middleware.RecoveryCron())
 }
 
+func (cron *Cron) AddJob() {
+
+}
+
 func Run(ctx context.Context, opts ...Option) error {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
@@ -94,12 +98,9 @@ func Run(ctx context.Context, opts ...Option) error {
 	for _, opt := range opts {
 		opt(&o)
 	}
+
 	config.MustLoad(o.conf)
-	if config.C.PrintConfig {
-		config.PrintWithJSON()
-
-	}
-
+	config.PrintWithJSON()
 	logger.WithContext(ctx).Printf("Start #CRON# server, #run_mode %s,#version %s,#pid %d", config.C.RunMode, o.version, os.Getpid())
 
 	// 初始化 logrus
@@ -114,25 +115,35 @@ func Run(ctx context.Context, opts ...Option) error {
 		return err
 	}
 
-	cron.V3Cron.Start()
-	stat := cron.waitGraceExit()
+	// # 注册中间件
+	cron.registerMiddleware()
 
+	// # 添加定时任务
+
+	// # goroutine 执行定时任务
+	cron.V3Cron.Start()
+
+	// # 处理主协程的优雅的退出
+	stat := cron.waitGraceExit(ctx)
+
+	// # 清理垃圾信息
 	loggerCleanFunc()
 	cleanFunc()
-	logger.WithContext(ctx).Info("Cron Server exit !")
-	time.Sleep(1)
+	logger.WithContext(ctx).Info("Cron Server exited !")
+	time.Sleep(time.Duration(1000) * time.Millisecond)
 	os.Exit(stat)
 	return nil
 }
 
+// InitCron 初始化 cron
 func InitCron(ctx context.Context) (*Cron, func(), error) {
-	// 初始化 cron
 	cron, cleanFunc, err := BuildCronInject()
+
 	if err != nil {
 		return nil, cleanFunc, err
 	}
+
 	cron.Middlewares = make([]cronctx.HandleFunc, 0)
 	cron.V3Cron = v3cron.New()
-
 	return cron, cleanFunc, err
 }
