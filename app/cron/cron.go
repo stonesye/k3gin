@@ -100,15 +100,6 @@ func Run(ctx context.Context, opts ...Option) error {
 
 	}
 
-	ExecJob(cronctx.CronContext{
-		Context:    ctx,
-		Name:       "",
-		Spec:       "",
-		Chain:      nil,
-		ChainIndex: 0,
-		KeyValues:  nil,
-	})
-
 	logger.WithContext(ctx).Printf("Start #CRON# server, #run_mode %s,#version %s,#pid %d", config.C.RunMode, o.version, os.Getpid())
 
 	// 初始化 logrus
