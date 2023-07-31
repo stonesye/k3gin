@@ -21,7 +21,7 @@ import (
 
 type options struct {
 	conf    string // 基础配置信息
-	cron    string // 定时任务的相关配置
+	job     string // 定时任务的相关配置
 	version string // cron的version
 
 }
@@ -32,9 +32,9 @@ func WithConf(conf string) func(*options) {
 	}
 }
 
-func WithCron(cron string) func(*options) {
+func WithJob(job string) func(*options) {
 	return func(o *options) {
-		o.cron = cron
+		o.job = job
 	}
 }
 
@@ -102,8 +102,14 @@ func Run(ctx context.Context, opts ...Option) error {
 	for _, opt := range opts {
 		opt(&o)
 	}
-	config.MustLoad(o.conf, o.cron)
+	config.MustLoad(o.conf, o.job)
 	logger.WithContext(ctx).Printf("Start #CRON# server, #run_mode %s,#version %s,#pid %d", config.C.RunMode, o.version, os.Getpid())
+
+	// 初始化 logrus
+	loggerCleanFunc, err := logger.InitLogger()
+	if err != nil {
+		return err
+	}
 
 	// # 初始化CRON #
 	cron, cleanFunc, err := InitCron(ctx)
@@ -114,21 +120,15 @@ func Run(ctx context.Context, opts ...Option) error {
 	cron.V3Cron.Start()
 	stat := cron.waitGraceExit()
 
+	loggerCleanFunc()
 	cleanFunc()
-
 	logger.WithContext(ctx).Info("Cron Server exit !")
+	time.Sleep(1)
 	os.Exit(stat)
-
 	return nil
 }
 
 func InitCron(ctx context.Context) (*Cron, func(), error) {
-
-	// 初始化 logrus
-	loggerCleanFunc, err := logger.InitLogger()
-	if err != nil {
-		return nil, loggerCleanFunc, err
-	}
 	// 初始化 cron
 	cron, cleanFunc, err := BuildCronInject()
 	if err != nil {

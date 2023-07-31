@@ -60,16 +60,16 @@ func cmdCron(ctx context.Context) *cli.Command {
 				Required: true, // 是否一定要指定 --conf 或 -c
 			},
 			&cli.StringFlag{
-				Name:     "corn",
-				Aliases:  []string{"corn"},
+				Name:     "job",
+				Aliases:  []string{"j"},
 				Usage:    "App configuration file(.json, .yaml, .toml)",
-				Required: true,
+				Required: false,
 			},
 		},
 		Action: func(c *cli.Context) error {
 			return cron.Run(ctx,
 				cron.WithConf(c.String("conf")),
-				cron.WithCron(c.String("cron")),
+				cron.WithJob(c.String("job")),
 				cron.WithVersion(VERSION),
 			)
 		},
