@@ -21,20 +21,12 @@ import (
 
 type options struct {
 	conf    string // 基础配置信息
-	job     string // 定时任务的相关配置
 	version string // cron的version
-
 }
 
 func WithConf(conf string) func(*options) {
 	return func(o *options) {
 		o.conf = conf
-	}
-}
-
-func WithJob(job string) func(*options) {
-	return func(o *options) {
-		o.job = job
 	}
 }
 
@@ -102,7 +94,21 @@ func Run(ctx context.Context, opts ...Option) error {
 	for _, opt := range opts {
 		opt(&o)
 	}
-	config.MustLoad(o.conf, o.job)
+	config.MustLoad(o.conf)
+	if config.C.PrintConfig {
+		config.PrintWithJSON()
+
+	}
+
+	ExecJob(cronctx.CronContext{
+		Context:    ctx,
+		Name:       "",
+		Spec:       "",
+		Chain:      nil,
+		ChainIndex: 0,
+		KeyValues:  nil,
+	})
+
 	logger.WithContext(ctx).Printf("Start #CRON# server, #run_mode %s,#version %s,#pid %d", config.C.RunMode, o.version, os.Getpid())
 
 	// 初始化 logrus
