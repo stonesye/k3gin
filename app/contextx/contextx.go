@@ -1,6 +1,8 @@
 package contextx
 
-import "context"
+import (
+	"context"
+)
 
 type (
 	// 作为context中的KEY

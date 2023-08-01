@@ -5,7 +5,10 @@ import (
 	"github.com/google/wire"
 	v3cron "github.com/robfig/cron/v3"
 	"github.com/sirupsen/logrus"
+	"k3gin/app/cache/redisx"
 	"k3gin/app/config"
+	"k3gin/app/gormx"
+	"k3gin/app/httpx"
 	"k3gin/app/logger"
 	"os"
 	"os/signal"
@@ -34,10 +37,14 @@ func WithVersion(version string) func(*options) {
 type Option func(*options)
 
 type Cron struct {
-	V3Cron *v3cron.Cron
+	V3Cron         *v3cron.Cron
+	HttpClient     *httpx.Client
+	DB             *gormx.DB
+	Store          *redisx.Store
+	GlobalJobFuncs []func(*Context) // 所有Cron都需要执行的任务
 }
 
-var CronSet = wire.NewSet(wire.Struct(new(Cron), "*"))
+var CronSet = wire.NewSet(wire.Struct(new(Cron), "V3Cron", "HttpClient", "DB", "Store"))
 
 // waitGraceExit 优雅退出
 func (cron *Cron) waitGraceExit(ctx context.Context) int {
@@ -69,12 +76,44 @@ func (cron *Cron) waitGraceExit(ctx context.Context) int {
 	}
 }
 
-func InitV3Cron(w IWorker) *v3cron.Cron {
-	cron := v3cron.New(v3cron.WithSeconds(), v3cron.WithLogger(v3cron.VerbosePrintfLogger(logrus.StandardLogger())))
+func (cron *Cron) AddJob(name string, spec string, jobs ...func(*Context)) error {
+	// # 将全局的和需要添加的任务都集中 #
+	funcs := make([]func(*Context), len(cron.GlobalJobFuncs)+len(jobs))
+	copy(funcs, cron.GlobalJobFuncs)
+	copy(funcs[len(cron.GlobalJobFuncs):], jobs)
 
-	w.Register(cron)
+	// 将任务封装成v3cron认识的job
 
-	return cron
+	f := func() {
+		// 当前任务 name， spec， funcs 元素都齐了, 创建job context
+		ctx := NewJobContext(name, spec, funcs...)
+		ctx.Next() // 执行任务
+	}
+
+	_, err := cron.V3Cron.AddJob(spec, v3cron.SkipIfStillRunning(v3cron.DefaultLogger)(NewJob(f)))
+
+	return err
+}
+
+func (cron *Cron) WithFrameContext(f func(frameContext *FrameContext)) func(*Context) {
+	return func(ctx *Context) {
+		frameCtx := FrameContext{
+			Ctx:  ctx,
+			Cron: cron,
+		}
+		f(&frameCtx)
+	}
+}
+
+func (cron *Cron) Use(jobFunc func(*Context)) {
+	if cron.GlobalJobFuncs == nil {
+		cron.GlobalJobFuncs = make([]func(*Context), 0)
+	}
+	cron.GlobalJobFuncs = append(cron.GlobalJobFuncs, jobFunc)
+}
+
+func InitV3Cron() *v3cron.Cron {
+	return v3cron.New(v3cron.WithSeconds(), v3cron.WithLogger(v3cron.VerbosePrintfLogger(logrus.StandardLogger())))
 }
 
 func Run(ctx context.Context, opts ...Option) error {
@@ -97,6 +136,12 @@ func Run(ctx context.Context, opts ...Option) error {
 	// # 初始化CRON #
 	cron, cleanFunc, err := BuildCronInject()
 
+	// # 设置所有Cron都需要执行的任务，比如异常处理 #
+	cron.Use(RecoverGlobalJob())
+
+	// # Add Job#
+	Register(cron)
+
 	cron.V3Cron.Start()
 	// #监听#
 	stat := cron.waitGraceExit(ctx)
@@ -107,4 +152,10 @@ func Run(ctx context.Context, opts ...Option) error {
 	time.Sleep(time.Duration(1000) * time.Millisecond)
 	os.Exit(stat)
 	return nil
+}
+
+// Register 注册所有的Cron任务
+func Register(cron *Cron) {
+	cron.AddJob("userjob", "* * * * * *", cron.WithFrameContext(UserJob))
+	cron.AddJob("Task2", "* * * * * *", TimeoutGlobalJob(5*time.Second), UserJobTimeout)
 }

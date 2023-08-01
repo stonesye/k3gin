@@ -1,4 +1,4 @@
-package middleware
+package cron
 
 import (
 	"bytes"
@@ -7,17 +7,19 @@ import (
 	"io/ioutil"
 	"k3gin/app/logger"
 	"runtime"
+	"time"
 )
 
-// RecoveryCronMiddleware 给每个CronJob都 挂上 recover 防止cron异常终止
-func RecoveryCronMiddleware(ctx context.Context) {
-	defer func() {
-		if err := recover(); err != nil {
-			// 获取异常堆栈信息
-			stack := stack(3)
-			logger.WithContext(ctx).Errorf("Cron Panic : %s", stack)
-		}
-	}()
+func RecoverGlobalJob() func(ctx *Context) {
+	return func(ctx *Context) {
+		defer func() {
+			if err := recover(); err != nil {
+				stack := stack(3)
+				logger.WithContext(ctx).Errorf("Cron painc err: %s", stack)
+			}
+		}()
+		ctx.Next()
+	}
 }
 
 var (
@@ -86,4 +88,13 @@ func function(pc uintptr) []byte {
 	}
 	name = bytes.Replace(name, centerDot, dot, -1)
 	return name
+}
+
+func TimeoutGlobalJob(duration time.Duration) func(ctx *Context) {
+	return func(ctx *Context) {
+		timeoutCtx, cancelFunc := context.WithTimeout(ctx.Context, duration)
+		defer cancelFunc()
+		ctx.Context = timeoutCtx
+		ctx.Next()
+	}
 }

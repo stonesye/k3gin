@@ -8,7 +8,6 @@ package cron
 
 import (
 	"k3gin/app/cache/redisx"
-	"k3gin/app/cron/job"
 	"k3gin/app/gormx"
 	"k3gin/app/httpx"
 )
@@ -16,8 +15,7 @@ import (
 // Injectors from wire.go:
 
 func BuildCronInject() (*Cron, func(), error) {
-	userJobName := _wireUserJobNameValue
-	userJobSpec := _wireUserJobSpecValue
+	cron := InitV3Cron()
 	client, cleanup, err := httpx.InitHttp()
 	if err != nil {
 		return nil, nil, err
@@ -33,19 +31,11 @@ func BuildCronInject() (*Cron, func(), error) {
 		cleanup()
 		return nil, nil, err
 	}
-	userJob := &job.UserJob{
-		Name:  userJobName,
-		Spec:  userJobSpec,
-		Http:  client,
-		DB:    db,
-		Store: store,
-	}
-	worker := &Worker{
-		UserJob: userJob,
-	}
-	cron := InitV3Cron(worker)
 	cronCron := &Cron{
-		V3Cron: cron,
+		V3Cron:     cron,
+		HttpClient: client,
+		DB:         db,
+		Store:      store,
 	}
 	return cronCron, func() {
 		cleanup3()
@@ -53,8 +43,3 @@ func BuildCronInject() (*Cron, func(), error) {
 		cleanup()
 	}, nil
 }
-
-var (
-	_wireUserJobNameValue = job.UserJobName("user")
-	_wireUserJobSpecValue = job.UserJobSpec("*/2 * * * * *")
-)
