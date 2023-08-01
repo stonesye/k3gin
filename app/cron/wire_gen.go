@@ -8,6 +8,7 @@ package cron
 
 import (
 	"k3gin/app/cache/redisx"
+	"k3gin/app/cron/job"
 	"k3gin/app/gormx"
 	"k3gin/app/httpx"
 )
@@ -15,29 +16,45 @@ import (
 // Injectors from wire.go:
 
 func BuildCronInject() (*Cron, func(), error) {
-	db, cleanup, err := gormx.InitGormDB()
+	userJobName := _wireUserJobNameValue
+	userJobSpec := _wireUserJobSpecValue
+	client, cleanup, err := httpx.InitHttp()
 	if err != nil {
 		return nil, nil, err
 	}
-	store, cleanup2, err := redisx.InitRedisStore()
+	db, cleanup2, err := gormx.InitGormDB()
 	if err != nil {
 		cleanup()
 		return nil, nil, err
 	}
-	client, cleanup3, err := httpx.InitHttp()
+	store, cleanup3, err := redisx.InitRedisStore()
 	if err != nil {
 		cleanup2()
 		cleanup()
 		return nil, nil, err
 	}
-	cron := &Cron{
-		Db:         db,
-		Redis:      store,
-		HttpClient: client,
+	userJob := &job.UserJob{
+		Name:  userJobName,
+		Spec:  userJobSpec,
+		Http:  client,
+		DB:    db,
+		Store: store,
 	}
-	return cron, func() {
+	worker := &Worker{
+		UserJob: userJob,
+	}
+	cron := InitV3Cron(worker)
+	cronCron := &Cron{
+		V3Cron: cron,
+	}
+	return cronCron, func() {
 		cleanup3()
 		cleanup2()
 		cleanup()
 	}, nil
 }
+
+var (
+	_wireUserJobNameValue = job.UserJobName("user")
+	_wireUserJobSpecValue = job.UserJobSpec("*/5 * * * * *")
+)

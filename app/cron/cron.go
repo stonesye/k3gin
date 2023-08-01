@@ -5,11 +5,7 @@ import (
 	"github.com/google/wire"
 	v3cron "github.com/robfig/cron/v3"
 	"github.com/sirupsen/logrus"
-	"k3gin/app/cache/redisx"
 	"k3gin/app/config"
-	"k3gin/app/cron/job"
-	"k3gin/app/gormx"
-	"k3gin/app/httpx"
 	"k3gin/app/logger"
 	"os"
 	"os/signal"
@@ -38,13 +34,10 @@ func WithVersion(version string) func(*options) {
 type Option func(*options)
 
 type Cron struct {
-	V3Cron     *v3cron.Cron
-	Db         *gormx.DB
-	Redis      *redisx.Store
-	HttpClient *httpx.Client
+	V3Cron *v3cron.Cron
 }
 
-var CronSet = wire.NewSet(wire.Struct(new(Cron), "Db", "Redis", "HttpClient"), gormx.InitGormDB, redisx.RedisStoreSet, httpx.InitHttp)
+var CronSet = wire.NewSet(wire.Struct(new(Cron), "*"))
 
 // waitGraceExit 优雅退出
 func (cron *Cron) waitGraceExit(ctx context.Context) int {
@@ -76,8 +69,12 @@ func (cron *Cron) waitGraceExit(ctx context.Context) int {
 	}
 }
 
-func (cron *Cron) withV3Cron(ctx context.Context) {
-	cron.V3Cron = v3cron.New(v3cron.WithSeconds(), v3cron.WithLogger(v3cron.VerbosePrintfLogger(logrus.StandardLogger())))
+func InitV3Cron(w IWorker) *v3cron.Cron {
+	cron := v3cron.New(v3cron.WithSeconds(), v3cron.WithLogger(v3cron.VerbosePrintfLogger(logrus.StandardLogger())))
+
+	w.Register(cron)
+
+	return cron
 }
 
 func Run(ctx context.Context, opts ...Option) error {
@@ -99,9 +96,8 @@ func Run(ctx context.Context, opts ...Option) error {
 
 	// # 初始化CRON #
 	cron, cleanFunc, err := BuildCronInject()
-	cron.withV3Cron(ctx)
 
-	cron.V3Cron.AddJob("*/5 * * * * *", &job.UserJob{Name: "yelei"})
+	// cron.V3Cron.AddJob("*/5 * * * * *", &job.UserJob{Name: "yelei"})
 
 	cron.V3Cron.Start()
 	// #监听#
