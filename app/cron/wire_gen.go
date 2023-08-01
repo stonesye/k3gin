@@ -56,5 +56,5 @@ func BuildCronInject() (*Cron, func(), error) {
 
 var (
 	_wireUserJobNameValue = job.UserJobName("user")
-	_wireUserJobSpecValue = job.UserJobSpec("*/5 * * * * *")
+	_wireUserJobSpecValue = job.UserJobSpec("*/2 * * * * *")
 )

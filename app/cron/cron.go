@@ -97,8 +97,6 @@ func Run(ctx context.Context, opts ...Option) error {
 	// # 初始化CRON #
 	cron, cleanFunc, err := BuildCronInject()
 
-	// cron.V3Cron.AddJob("*/5 * * * * *", &job.UserJob{Name: "yelei"})
-
 	cron.V3Cron.Start()
 	// #监听#
 	stat := cron.waitGraceExit(ctx)

@@ -17,5 +17,5 @@ type Worker struct {
 }
 
 func (w *Worker) Register(cron *v3cron.Cron) {
-	cron.AddJob(string(w.UserJob.Spec), w.UserJob)
+	cron.AddJob(string(w.UserJob.Spec), v3cron.SkipIfStillRunning(v3cron.DefaultLogger)(w.UserJob)) // TODO 全部Cron都需要跳过当前正在执行的程序
 }

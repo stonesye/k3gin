@@ -6,6 +6,7 @@ import (
 	"k3gin/app/cache/redisx"
 	"k3gin/app/gormx"
 	"k3gin/app/httpx"
+	"time"
 )
 
 type UserJobName string
@@ -21,8 +22,16 @@ type UserJob struct {
 
 var UserJobSet = wire.NewSet(wire.Struct(new(UserJob), "*"),
 	wire.Value(UserJobName("user")),
-	wire.Value(UserJobSpec("*/5 * * * * *")))
+	wire.Value(UserJobSpec("*/2 * * * * *")))
+
+var count = 0
 
 func (u *UserJob) Run() {
-	fmt.Println(u.Name, "--------->正在运行")
+	count++
+	fmt.Println(u.Name, "--------->正在运行", time.Now().Format("2006-01-02 15:04:05"))
+	if count == 1 {
+		panic("ooooooooooooooops !!!")
+	}
+
+	time.Sleep(5 * time.Second)
 }
