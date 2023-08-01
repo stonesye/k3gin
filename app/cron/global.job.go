@@ -10,6 +10,15 @@ import (
 	"time"
 )
 
+func TimeoutGlobalJob(duration time.Duration) func(ctx *Context) {
+	return func(ctx *Context) {
+		timeoutCtx, cancelFunc := context.WithTimeout(ctx.Context, duration)
+		defer cancelFunc()
+		ctx.Context = timeoutCtx
+		ctx.Next()
+	}
+}
+
 func RecoverGlobalJob() func(ctx *Context) {
 	return func(ctx *Context) {
 		defer func() {
@@ -88,13 +97,4 @@ func function(pc uintptr) []byte {
 	}
 	name = bytes.Replace(name, centerDot, dot, -1)
 	return name
-}
-
-func TimeoutGlobalJob(duration time.Duration) func(ctx *Context) {
-	return func(ctx *Context) {
-		timeoutCtx, cancelFunc := context.WithTimeout(ctx.Context, duration)
-		defer cancelFunc()
-		ctx.Context = timeoutCtx
-		ctx.Next()
-	}
 }
