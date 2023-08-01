@@ -3,14 +3,15 @@ package cron
 import (
 	"context"
 	"github.com/google/wire"
+	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	v3cron "github.com/robfig/cron/v3"
+	"io"
 	"k3gin/app/cache/redisx"
 	"k3gin/app/config"
-	cronctx "k3gin/app/cron/context"
-	"k3gin/app/cron/middleware"
 	"k3gin/app/gormx"
 	"k3gin/app/httpx"
 	"k3gin/app/logger"
+	"log"
 	"os"
 	"os/signal"
 	"runtime"
@@ -38,27 +39,25 @@ func WithVersion(version string) func(*options) {
 type Option func(*options)
 
 type Cron struct {
-	V3Cron      *v3cron.Cron
-	Middlewares []cronctx.HandleFunc // 每个Task/Job都需要执行的全局中间件
-	Db          *gormx.DB
-	Redis       *redisx.Store
-	HttpClient  *httpx.Client
+	V3Cron     *v3cron.Cron
+	Db         *gormx.DB
+	Redis      *redisx.Store
+	HttpClient *httpx.Client
 }
 
 var CronSet = wire.NewSet(wire.Struct(new(Cron), "Db", "Redis", "HttpClient"), gormx.InitGormDB, redisx.RedisStoreSet, httpx.InitHttp)
 
+// waitGraceExit 优雅退出
 func (cron *Cron) waitGraceExit(ctx context.Context) int {
 	stat := 0
-
 	// 创建新号源， 控制cron的运行， 确保只有接触到特殊的信号以后， 主协程才会退出，子协程才会被回收
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGINT, syscall.SIGTERM)
+	logger.WithContext(ctx).Info("Waiting signal exiting cron ... ")
 
 	for {
-		logger.WithContext(ctx).Info("Waiting signal exiting cron ... ")
 
 		s := <-sig
-
 		switch s {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
 			logger.WithContext(ctx).Infof("Received signal : %s, cron server exiting ...", s.String())
@@ -78,40 +77,37 @@ func (cron *Cron) waitGraceExit(ctx context.Context) int {
 	}
 }
 
-func (cron *Cron) Use(handleFunc cronctx.HandleFunc) {
-	cron.Middlewares = append(cron.Middlewares, handleFunc)
-}
+func (cron *Cron) withV3Cron() {
+	c := config.C.Cron
 
-func (cron *Cron) registerMiddleware() {
-	cron.Use(middleware.RecoveryCron())
-}
+	var file io.Writer = os.Stdout
+	var err error
 
-// AddJob 每个Job都需要生成一个新的context ，每个context都只存储一个时间节点要执行的所有middleware, 每个时间节点可能要执行多个middleware
-func (cron *Cron) AddJob(name string, spec string, handles ...cronctx.HandleFunc) error {
-	middlewares := make([]cronctx.HandleFunc, len(cron.Middlewares)+len(handles))
-	copy(middlewares, cron.Middlewares)
-	copy(middlewares[len(cron.Middlewares):], handles)
-
-	f := func() {
-		ctx := cronctx.NewCronContext(name, spec, middlewares)
-		ctx.Next()
+	switch c.Output {
+	case "stdout":
+		file = os.Stdout
+	case "stderr":
+		file = os.Stderr
+	case "file":
+		file, err = rotatelogs.New(
+			c.OutputFile+".%Y-%m-%d",
+			rotatelogs.WithLinkName(c.OutputFile),                                // 日志文件地址
+			rotatelogs.WithRotationTime(time.Duration(c.RotationTime)*time.Hour), // 日志轮训周期 一个日志文件存储多长时间
+			rotatelogs.WithRotationCount(uint(c.RotationCount)))
+		if err != nil {
+			file = os.Stdout
+		}
 	}
-
-	job := v3cron.SkipIfStillRunning(v3cron.DefaultLogger)(newJob(f))
-	_, err := cron.V3Cron.AddJob(spec, job)
-
-	return err
+	cron.V3Cron = v3cron.New(v3cron.WithSeconds(), v3cron.WithLogger(v3cron.VerbosePrintfLogger(log.New(file, "cron", log.LstdFlags))))
 }
 
 func Run(ctx context.Context, opts ...Option) error {
 	runtime.GOMAXPROCS(runtime.NumCPU())
-
 	// # 初始化config #
 	var o options
 	for _, opt := range opts {
 		opt(&o)
 	}
-
 	config.MustLoad(o.conf)
 	config.PrintWithJSON()
 	logger.WithContext(ctx).Printf("Start #CRON# server, #run_mode %s,#version %s,#pid %d", config.C.RunMode, o.version, os.Getpid())
@@ -123,42 +119,17 @@ func Run(ctx context.Context, opts ...Option) error {
 	}
 
 	// # 初始化CRON #
-	cron, cleanFunc, err := InitCron(ctx)
-	if err != nil {
-		return err
-	}
+	cron, cleanFunc, err := BuildCronInject()
+	cron.withV3Cron()
 
-	// # 注册中间件
-	cron.registerMiddleware()
-
-	// # 添加定时任务
-	cron.AddJob("Task1", "*/2 * * * * ", task1)
-	cron.AddJob("Task2", "*/2 * * * *", middleware.TimeoutCron(5*time.Second), task2)
-
-	// # goroutine 执行定时任务
-	cron.V3Cron.Start()
-
-	// # 处理主协程的优雅的退出
-	stat := cron.waitGraceExit(ctx)
+	// 监听
+	cron.waitGraceExit(ctx)
 
 	// # 清理垃圾信息
 	loggerCleanFunc()
 	cleanFunc()
 	logger.WithContext(ctx).Info("Cron Server exited !")
 	time.Sleep(time.Duration(1000) * time.Millisecond)
-	os.Exit(stat)
+	// os.Exit(stat)
 	return nil
-}
-
-// InitCron 初始化 cron
-func InitCron(ctx context.Context) (*Cron, func(), error) {
-	cron, cleanFunc, err := BuildCronInject()
-
-	if err != nil {
-		return nil, cleanFunc, err
-	}
-
-	cron.Middlewares = make([]cronctx.HandleFunc, 0)
-	cron.V3Cron = v3cron.New()
-	return cron, cleanFunc, err
 }

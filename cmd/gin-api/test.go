@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/robfig/cron/v3"
+	"github.com/sirupsen/logrus"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 )
 
@@ -56,6 +56,15 @@ func Work(ctx context.Context, msg string) {
 			time.Sleep(time.Second)
 		}
 	}
+}
+
+type task struct {
+	name string
+	spec string
+}
+
+func (t *task) Run() {
+	fmt.Println("name", t.name, "spec", t.spec)
 }
 
 func main() {
@@ -130,6 +139,7 @@ func main() {
 
 	*/
 
+	/**
 	// 创建新号源， 控制cron的运行， 确保只有接触到特殊的信号以后， 主协程才会退出，子协程才会被回收
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGINT, syscall.SIGTERM)
@@ -155,4 +165,40 @@ func main() {
 
 	time.Sleep(10 * time.Second)
 
+	*/
+
+	// parser := cron.NewParser(cron.Second | cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow | cron.Descriptor)
+	// c := cron.New(cron.WithParser(parser))
+
+	log := logrus.New()
+
+	log.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
+	log.SetLevel(5)
+	log.SetOutput(os.Stdout)
+	log.WithField("aaaaa", "bbbbb")
+
+	c := cron.New(cron.WithSeconds(), cron.WithLogger(cron.VerbosePrintfLogger(log)))
+
+	cron.WithChain()
+
+	c.AddJob("* * * * * *", &task{
+		name: "Test1",
+		spec: "哈哈哈哈哈",
+	})
+
+	c.AddJob("* * * * * *", &task{
+		name: "Test2",
+		spec: "哈哈哈哈哈",
+	})
+
+	c.AddJob("@every 1s", &task{
+		name: "Test3",
+		spec: "哈哈哈哈哈",
+	})
+
+	c.Start()
+
+	time.Sleep(20 * time.Second)
+
+	c.Stop()
 }
