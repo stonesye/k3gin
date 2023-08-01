@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -87,6 +90,7 @@ func main() {
 	fmt.Println(time.Now())
 	*/
 
+	/**
 	ctx, cancel := context.WithCancel(context.Background())
 
 	for i := 0; i < 5; i++ {
@@ -122,6 +126,33 @@ func main() {
 
 	time.Sleep(5 * time.Second)
 	cancel()
+	time.Sleep(10 * time.Second)
+
+	*/
+
+	// 创建新号源， 控制cron的运行， 确保只有接触到特殊的信号以后， 主协程才会退出，子协程才会被回收
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGINT, syscall.SIGTERM)
+
+	for i := 0; i < 5; i++ {
+		go func(data int) {
+		EXIT:
+			for {
+				fmt.Println("开始协程", data)
+				s := <-sig
+				switch s {
+				case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
+					fmt.Println("协程", data, "准备退出....")
+					break EXIT
+				case syscall.SIGHUP:
+				default:
+					fmt.Println("协程", data, "持续运行中....")
+					time.Sleep(time.Second)
+				}
+			}
+		}(i)
+	}
+
 	time.Sleep(10 * time.Second)
 
 }
