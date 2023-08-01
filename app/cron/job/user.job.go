@@ -21,7 +21,7 @@ type UserJob struct {
 }
 
 var UserJobSet = wire.NewSet(wire.Struct(new(UserJob), "*"),
-	wire.Value(UserJobName("user")),
+	wire.Value(UserJobName("TestUserJob")),
 	wire.Value(UserJobSpec("*/2 * * * * *")))
 
 var count = 0
@@ -29,9 +29,12 @@ var count = 0
 func (u *UserJob) Run() {
 	count++
 	fmt.Println(u.Name, "--------->正在运行", time.Now().Format("2006-01-02 15:04:05"))
-	if count == 1 {
+	/**
+	if count == 2 {
 		panic("ooooooooooooooops !!!")
 	}
 
+	*/
 	time.Sleep(5 * time.Second)
+
 }

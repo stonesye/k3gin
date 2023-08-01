@@ -16,6 +16,9 @@ type Worker struct {
 	UserJob *job.UserJob
 }
 
+// TODO 全部Cron都需要跳过当前正在执行的程序
+// TODO 考虑Job执行时间过长，需要强制熔断
+
 func (w *Worker) Register(cron *v3cron.Cron) {
-	cron.AddJob(string(w.UserJob.Spec), v3cron.SkipIfStillRunning(v3cron.DefaultLogger)(w.UserJob)) // TODO 全部Cron都需要跳过当前正在执行的程序
+	cron.AddJob(string(w.UserJob.Spec), v3cron.NewChain(v3cron.SkipIfStillRunning(v3cron.DefaultLogger)).Then(w.UserJob))
 }
