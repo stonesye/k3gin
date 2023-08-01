@@ -3,15 +3,14 @@ package cron
 import (
 	"context"
 	"github.com/google/wire"
-	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	v3cron "github.com/robfig/cron/v3"
-	"io"
+	"github.com/sirupsen/logrus"
 	"k3gin/app/cache/redisx"
 	"k3gin/app/config"
+	"k3gin/app/cron/job"
 	"k3gin/app/gormx"
 	"k3gin/app/httpx"
 	"k3gin/app/logger"
-	"log"
 	"os"
 	"os/signal"
 	"runtime"
@@ -77,28 +76,8 @@ func (cron *Cron) waitGraceExit(ctx context.Context) int {
 	}
 }
 
-func (cron *Cron) withV3Cron() {
-	c := config.C.Cron
-
-	var file io.Writer = os.Stdout
-	var err error
-
-	switch c.Output {
-	case "stdout":
-		file = os.Stdout
-	case "stderr":
-		file = os.Stderr
-	case "file":
-		file, err = rotatelogs.New(
-			c.OutputFile+".%Y-%m-%d",
-			rotatelogs.WithLinkName(c.OutputFile),                                // 日志文件地址
-			rotatelogs.WithRotationTime(time.Duration(c.RotationTime)*time.Hour), // 日志轮训周期 一个日志文件存储多长时间
-			rotatelogs.WithRotationCount(uint(c.RotationCount)))
-		if err != nil {
-			file = os.Stdout
-		}
-	}
-	cron.V3Cron = v3cron.New(v3cron.WithSeconds(), v3cron.WithLogger(v3cron.VerbosePrintfLogger(log.New(file, "cron", log.LstdFlags))))
+func (cron *Cron) withV3Cron(ctx context.Context) {
+	cron.V3Cron = v3cron.New(v3cron.WithSeconds(), v3cron.WithLogger(v3cron.VerbosePrintfLogger(logrus.StandardLogger())))
 }
 
 func Run(ctx context.Context, opts ...Option) error {
@@ -120,16 +99,18 @@ func Run(ctx context.Context, opts ...Option) error {
 
 	// # 初始化CRON #
 	cron, cleanFunc, err := BuildCronInject()
-	cron.withV3Cron()
+	cron.withV3Cron(ctx)
 
-	// 监听
-	cron.waitGraceExit(ctx)
+	cron.V3Cron.AddJob("*/5 * * * * *", &job.UserJob{Name: "yelei"})
 
+	cron.V3Cron.Start()
+	// #监听#
+	stat := cron.waitGraceExit(ctx)
 	// # 清理垃圾信息
 	loggerCleanFunc()
 	cleanFunc()
 	logger.WithContext(ctx).Info("Cron Server exited !")
 	time.Sleep(time.Duration(1000) * time.Millisecond)
-	// os.Exit(stat)
+	os.Exit(stat)
 	return nil
 }

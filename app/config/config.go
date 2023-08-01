@@ -78,10 +78,6 @@ type Config struct {
 
 type Cron struct {
 	WaitGraceExit int
-	Output        string
-	OutputFile    string
-	RotationCount int
-	RotationTime  int
 }
 
 type SESSION struct {

@@ -1,12 +1,13 @@
 package job
 
-import "fmt"
+import (
+	"fmt"
+)
 
-type User struct {
+type UserJob struct {
 	Name string
-	Spec string
 }
 
-func (u *User) Run() {
-	fmt.Println("user do task .....")
+func (u *UserJob) Run() {
+	fmt.Println("do something for user : ", u.Name)
 }

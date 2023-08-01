@@ -191,7 +191,7 @@ func main() {
 		spec: "哈哈哈哈哈",
 	})
 
-	c.AddJob("@every 1s", &task{
+	c.AddJob("@every 2s", &task{
 		name: "Test3",
 		spec: "哈哈哈哈哈",
 	})

@@ -24,9 +24,9 @@ func SetLevel(level Level) {
 func SetFormatter(format string) {
 	switch format {
 	case "json":
-		logrus.SetFormatter(new(logrus.JSONFormatter))
+		logrus.SetFormatter(&logrus.JSONFormatter{TimestampFormat: "2006-01-02 15:04:05"})
 	default:
-		logrus.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
+		logrus.SetFormatter(&logrus.TextFormatter{FullTimestamp: true, TimestampFormat: "2006-01-02 15:04:05"})
 	}
 }
 
