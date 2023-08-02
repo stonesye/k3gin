@@ -36,7 +36,7 @@ func main() {
 	cliApp := cli.NewApp()
 	cliApp.Name = "k3-gin"
 	cliApp.Version = VERSION
-	cliApp.Usage = "K3-GIN based on gin + gorm + wire + logrus + rotatelogs."
+	cliApp.Usage = "K3-GIN based on gin + gorm + wire + logrus + rotatelogs + robfig-cron + swagger."
 	cliApp.Commands = []*cli.Command{
 		cmdWeb(ctx),
 		cmdCron(ctx),
