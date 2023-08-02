@@ -1,8 +1,20 @@
-package cron
+package context
 
 import (
 	"context"
+	"k3gin/app/cache/redisx"
+	"k3gin/app/gormx"
+	"k3gin/app/httpx"
 )
+
+// FrameContext 框架Context 用于让job函数里面能获取到各种客户端来使用
+type FrameContext struct {
+	context.Context
+	HttpClient  *httpx.Client
+	DB          *gormx.DB
+	Store       *redisx.Store
+	CronContext *Context
+}
 
 // Context Cron执行的上下文，可以理解成为存储了一个任务的所有信息, 即单个任务
 type Context struct {
@@ -60,10 +72,4 @@ func (c *Context) Value(k interface{}) interface{} {
 	}
 
 	return c.Context.Value(k)
-}
-
-// FrameContext 框架Context 用于让job函数里面能获取到各种客户端来使用
-type FrameContext struct {
-	Ctx  *Context
-	Cron *Cron
 }

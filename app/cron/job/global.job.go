@@ -1,17 +1,18 @@
-package cron
+package job
 
 import (
 	"bytes"
 	"context"
 	"fmt"
 	"io/ioutil"
+	croncontext "k3gin/app/cron/context"
 	"k3gin/app/logger"
 	"runtime"
 	"time"
 )
 
-func TimeoutGlobalJob(duration time.Duration) func(ctx *Context) {
-	return func(ctx *Context) {
+func TimeoutGlobalJob(duration time.Duration) func(ctx *croncontext.Context) {
+	return func(ctx *croncontext.Context) {
 		timeoutCtx, cancelFunc := context.WithTimeout(ctx.Context, duration)
 		defer cancelFunc()
 		ctx.Context = timeoutCtx
@@ -19,8 +20,8 @@ func TimeoutGlobalJob(duration time.Duration) func(ctx *Context) {
 	}
 }
 
-func RecoverGlobalJob() func(ctx *Context) {
-	return func(ctx *Context) {
+func RecoverGlobalJob() func(ctx *croncontext.Context) {
+	return func(ctx *croncontext.Context) {
 		defer func() {
 			if err := recover(); err != nil {
 				stack := stack(3)
@@ -97,4 +98,17 @@ func function(pc uintptr) []byte {
 	}
 	name = bytes.Replace(name, centerDot, dot, -1)
 	return name
+}
+
+// Job 包装一个对象，实现Run方法， 因为v3cron包里面的Job对象是需要实现Run函数的, 方便后续将任何待处理逻辑封装成Job，交给v3cron来处理
+type Job struct {
+	f func()
+}
+
+func (job *Job) Run() {
+	job.f()
+}
+
+func NewJob(f func()) *Job {
+	return &Job{f: f}
 }

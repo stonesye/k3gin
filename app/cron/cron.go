@@ -7,6 +7,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"k3gin/app/cache/redisx"
 	"k3gin/app/config"
+	croncontext "k3gin/app/cron/context"
+	"k3gin/app/cron/job"
 	"k3gin/app/gormx"
 	"k3gin/app/httpx"
 	"k3gin/app/logger"
@@ -41,7 +43,7 @@ type Cron struct {
 	HttpClient     *httpx.Client
 	DB             *gormx.DB
 	Store          *redisx.Store
-	GlobalJobFuncs []func(*Context) // 所有Cron都需要执行的任务
+	GlobalJobFuncs []func(*croncontext.Context) // 所有Cron都需要执行的任务
 }
 
 var CronSet = wire.NewSet(wire.Struct(new(Cron), "V3Cron", "HttpClient", "DB", "Store"))
@@ -76,9 +78,9 @@ func (cron *Cron) waitGraceExit(ctx context.Context) int {
 	}
 }
 
-func (cron *Cron) AddJob(name string, spec string, jobs ...func(*Context)) error {
+func (cron *Cron) AddJob(name string, spec string, jobs ...func(*croncontext.Context)) error {
 	// # 将全局的和需要添加的任务都集中 #
-	funcs := make([]func(*Context), len(cron.GlobalJobFuncs)+len(jobs))
+	funcs := make([]func(*croncontext.Context), len(cron.GlobalJobFuncs)+len(jobs))
 	copy(funcs, cron.GlobalJobFuncs)
 	copy(funcs[len(cron.GlobalJobFuncs):], jobs)
 
@@ -86,30 +88,33 @@ func (cron *Cron) AddJob(name string, spec string, jobs ...func(*Context)) error
 
 	f := func() {
 		// 当前任务 name， spec， funcs 元素都齐了, 创建job context
-		ctx := NewJobContext(name, spec, funcs...)
+		ctx := croncontext.NewJobContext(name, spec, funcs...)
 		ctx.Next() // 执行任务
 	}
 
-	_, err := cron.V3Cron.AddJob(spec, v3cron.SkipIfStillRunning(v3cron.DefaultLogger)(NewJob(f)))
+	_, err := cron.V3Cron.AddJob(spec, v3cron.SkipIfStillRunning(v3cron.DefaultLogger)(job.NewJob(f)))
 
 	return err
 }
 
-func (cron *Cron) WithFrameContext(f func(frameContext *FrameContext)) func(*Context) {
-	return func(ctx *Context) {
-		frameCtx := FrameContext{
-			Ctx:  ctx,
-			Cron: cron,
-		}
-		f(&frameCtx)
-	}
-}
-
-func (cron *Cron) Use(jobFunc func(*Context)) {
+func (cron *Cron) Use(jobFunc func(*croncontext.Context)) {
 	if cron.GlobalJobFuncs == nil {
-		cron.GlobalJobFuncs = make([]func(*Context), 0)
+		cron.GlobalJobFuncs = make([]func(*croncontext.Context), 0)
 	}
 	cron.GlobalJobFuncs = append(cron.GlobalJobFuncs, jobFunc)
+}
+
+func (cron *Cron) WithFrameContext(handle func(*croncontext.FrameContext)) func(*croncontext.Context) {
+	return func(ctx *croncontext.Context) {
+		frameCtx := &croncontext.FrameContext{
+			Context:     context.TODO(),
+			HttpClient:  cron.HttpClient,
+			DB:          cron.DB,
+			Store:       cron.Store,
+			CronContext: ctx,
+		}
+		handle(frameCtx)
+	}
 }
 
 func InitV3Cron() *v3cron.Cron {
@@ -137,7 +142,7 @@ func Run(ctx context.Context, opts ...Option) error {
 	cron, cleanFunc, err := BuildCronInject()
 
 	// # 设置所有Cron都需要执行的任务，比如异常处理 #
-	cron.Use(RecoverGlobalJob())
+	cron.Use(job.RecoverGlobalJob())
 
 	// # Add Job#
 	Register(cron)
@@ -156,6 +161,7 @@ func Run(ctx context.Context, opts ...Option) error {
 
 // Register 注册所有的Cron任务
 func Register(cron *Cron) {
-	cron.AddJob("userjob", "* * * * * *", cron.WithFrameContext(UserJob))
-	cron.AddJob("Task2", "* * * * * *", TimeoutGlobalJob(5*time.Second), UserJobTimeout)
+	// cron.AddJob("userjob", "* * * * * *", cron.WithFrameContext(UserJob))
+	cron.AddJob("userjob", "* * * * * *", cron.WithFrameContext(job.TestJob))
+	cron.AddJob("Task2", "* * * * * *", job.TimeoutGlobalJob(5*time.Second), job.TestTimeoutJob)
 }

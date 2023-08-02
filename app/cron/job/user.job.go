@@ -1,23 +1,24 @@
-package cron
+package job
 
 import (
 	"fmt"
+	"k3gin/app/cron/context"
 	"time"
 )
 
 var count = 0
 
-func UserJob(ctx *FrameContext) {
+func TestJob(ctx *context.FrameContext) {
 	count++
 	fmt.Println("count = ", count)
 	if count == 2 {
 		panic("异常错误")
 	}
-	fmt.Println("this is user job", ctx.Ctx, ctx.Cron)
+	fmt.Println("this is user job", ctx, ctx.CronContext)
 	time.Sleep(3 * time.Second)
 }
 
-func UserJobTimeout(ctx *Context) {
+func TestTimeoutJob(ctx *context.Context) {
 	<-ctx.Done()
 	fmt.Println(ctx)
 }
