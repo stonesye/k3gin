@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	_ "github.com/apache/skywalking-go"
 	"github.com/urfave/cli/v2"
 	"k3gin/app"
 	"k3gin/app/contextx"
@@ -9,6 +10,7 @@ import (
 	"k3gin/app/logger"
 	_ "k3gin/cmd/gin-api/docs"
 	"os"
+	"runtime"
 )
 
 const VERSION = "1.0.1"
@@ -28,6 +30,7 @@ const VERSION = "1.0.1"
 // @host		127.0.0.1:8081
 // @BasePath	/
 func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	// 将 tag 封装到 自定义的 context 里面
 	ctx := contextx.NewTag(context.Background(), "__main__")

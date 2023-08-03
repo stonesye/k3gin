@@ -14,7 +14,6 @@ import (
 	"k3gin/app/logger"
 	"os"
 	"os/signal"
-	"runtime"
 	"syscall"
 	"time"
 )
@@ -122,7 +121,7 @@ func InitV3Cron() *v3cron.Cron {
 }
 
 func Run(ctx context.Context, opts ...Option) error {
-	runtime.GOMAXPROCS(runtime.NumCPU())
+
 	// # 初始化config #
 	var o options
 	for _, opt := range opts {

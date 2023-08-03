@@ -11,11 +11,13 @@ RELEASE_SERVER 	= release/${APP}
 GIT_COUNT 	= $(shell git rev-list --all --count)
 GIT_HASH        = $(shell git rev-parse --short HEAD)
 RELEASE_TAG     = $(RELEASE_VERSION).$(GIT_COUNT).$(GIT_HASH)
+SKYWALKING_ROOT = /Users/yelei/data/code/go-projects/skywalking-go-agent
 
 all: start
 
 build:
-	@go build -ldflags "-w -s -X main.VERSION=$(RELEASE_TAG)" -o $(SERVER_BIN) ./cmd/${APP}/
+	@go build -ldflags "-w -s -X main.VERSION=$(RELEASE_TAG)" -toolexec "${SKYWALKING_ROOT}/bin/skywalking-go-agent--darwin-amd64 -config ./configs/skywalking.yaml" -a -o $(SERVER_BIN) ./cmd/${APP}/
+	# @go build -ldflags "-w -s -X main.VERSION=$(RELEASE_TAG)"  -a -o $(SERVER_BIN) ./cmd/${APP}/
 
 start:
 	@go run -ldflags "-X main.VERSION=$(RELEASE_TAG)" ./cmd/${APP}/main.go web -c ./configs/config.toml -w ./static

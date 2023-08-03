@@ -5,7 +5,6 @@ import (
 	"github.com/google/wire"
 	"k3gin/app/ginx"
 	"k3gin/app/httpx"
-	"k3gin/app/logger"
 	"k3gin/app/schema"
 	"k3gin/app/service"
 	"time"
@@ -55,10 +54,13 @@ func (u *UserApi) Query(c *gin.Context) {
 }
 
 func (u *UserApi) Get(c *gin.Context) {
+	/**
 	go func() {
 		res := u.Client.Get("http://127.0.0.1:8081/api/v1/user", nil, nil)
 		time.Sleep(3 * time.Second)
 		logger.WithContext(c.Request.Context()).Infof("请求信息:%v", res)
 	}()
+
+	*/
 	ginx.ResSuccess(c, "success", "ok")
 }
