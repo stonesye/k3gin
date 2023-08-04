@@ -144,7 +144,10 @@ func Run(ctx context.Context, opts ...Option) error {
 	cron.Use(job.RecoverGlobalJob())
 
 	// # Add Job#
-	Register(cron)
+	_err := Register(cron)
+	if _err != nil {
+		return _err
+	}
 
 	cron.V3Cron.Start()
 	// #监听#
@@ -159,8 +162,9 @@ func Run(ctx context.Context, opts ...Option) error {
 }
 
 // Register 注册所有的Cron任务
-func Register(cron *Cron) {
+func Register(cron *Cron) (_err error) {
 	// cron.AddJob("userjob", "* * * * * *", cron.WithFrameContext(UserJob))
-	cron.AddJob("userjob", "* * * * * *", cron.WithFrameContext(job.TestJob))
-	cron.AddJob("Task2", "* * * * * *", job.TimeoutGlobalJob(5*time.Second), job.TestTimeoutJob)
+	_err = cron.AddJob("userjob", "* * * * * *", cron.WithFrameContext(job.TestJob))
+	_err = cron.AddJob("Task2", "* * * * * *", job.TimeoutGlobalJob(5*time.Second), job.TestTimeoutJob)
+	return
 }
