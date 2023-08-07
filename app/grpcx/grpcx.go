@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"google.golang.org/grpc"
 	"k3gin/app/config"
+	"k3gin/app/logger"
 	"os"
 	"os/signal"
 	"syscall"
@@ -55,12 +56,17 @@ func WaitGraceExit(ctx context.Context, server *grpc.Server) int {
 	}
 }
 
-func Run(ctx context.Context, options ...func(*options)) error {
+func Run(ctx context.Context, opts ...func(*options)) error {
 	var server Server
+	var o options
 
+	for _, opt := range opts {
+		opt(&o)
+	}
 	// 初始化config
-
+	config.MustLoad(o.ConfigFile)
 	// 初始化looger
+	logger.InitLogger()
 
 	// 初始化主要的组件
 
