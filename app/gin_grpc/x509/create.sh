@@ -30,7 +30,7 @@ openssl req -new                                    \
   -key server_key.pem                               \
   -days 3650                                        \
   -out server_csr.pem                               \
-  -subj /C=US/ST=CA/L=SVL/O=gRPC/CN=test-server1/   \
+  -subj /C=US/ST=CA/L=SVL/O=gRPC/CN=test-server/    \
   -config ./openssl.cnf                             \
   -reqexts test_server
 openssl x509 -req           \
@@ -51,7 +51,7 @@ openssl req -new                                    \
   -key client_key.pem                               \
   -days 3650                                        \
   -out client_csr.pem                               \
-  -subj /C=US/ST=CA/L=SVL/O=gRPC/CN=test-client1/   \
+  -subj /C=US/ST=CA/L=SVL/O=gRPC/CN=test-client/    \
   -config ./openssl.cnf                             \
   -reqexts test_client
 openssl x509 -req           \
