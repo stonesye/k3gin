@@ -74,6 +74,16 @@ type Config struct {
 	WMySQL      MySQL
 	Redis       Redis
 	Cron        Cron
+	GRPC        GRPC
+}
+
+type GRPC struct {
+	Host            string
+	Port            int
+	CertFile        string
+	KeyFile         string
+	CACert          string
+	ShutdownTimeout int
 }
 
 type Cron struct {
