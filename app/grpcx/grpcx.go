@@ -2,6 +2,7 @@ package grpcx
 
 import (
 	"context"
+	"fmt"
 	"google.golang.org/grpc"
 	"k3gin/app/config"
 	"os"
@@ -55,6 +56,22 @@ func WaitGraceExit(ctx context.Context, server *grpc.Server) int {
 }
 
 func Run(ctx context.Context, options ...func(*options)) error {
+	var server Server
+
+	// 初始化config
+
+	// 初始化looger
+
+	// 初始化主要的组件
+
+	// 初始化grpc服务端TCP协议
+
+	// 优雅退出
+
+	// 清理多余的数据
+
+	stat := WaitGraceExit(ctx, server.gserver)
+	fmt.Println(stat)
 
 	return nil
 }
