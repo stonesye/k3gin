@@ -37,23 +37,25 @@ var (
 
 func main() {
 	flag.Parse()
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
 	var opts []grpc.ServerOption
 
-	*certFile = "/Users/yelei/data/code/go-projects/k3gin/app/gin_grpc/config/server.crt"
-	*keyFile = "/Users/yelei/data/code/go-projects/k3gin/app/gin_grpc/config/server.key"
+	*certFile = "/Users/yelei/data/code/go-projects/k3gin/app/gin_grpc/x509/server_cert.pem"
+	*keyFile = "/Users/yelei/data/code/go-projects/k3gin/app/gin_grpc/x509/server_key.pem"
 	creds, err := credentials.NewServerTLSFromFile(*certFile, *keyFile)
 
 	if err != nil {
 		log.Fatalf("Fialed to generate credentials:%v", err)
 	}
+
 	opts = []grpc.ServerOption{grpc.Creds(creds)}
 	s := grpc.NewServer(opts...)
 	user_pb.RegisterUserInfoServer(s, &server{})
+
 	log.Printf("server listening at %v", lis.Addr())
 	if err = s.Serve(lis); err != nil {
 		log.Fatalf("failed to server: %v", err)

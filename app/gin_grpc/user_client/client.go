@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"k3gin/app/gin_grpc/user_pb"
 	"log"
 	"time"
@@ -20,12 +21,25 @@ func main() {
 
 	var opts []grpc.DialOption
 
-	*caFile =
+	*caFile = "/Users/yelei/data/code/go-projects/k3gin/app/gin_grpc/x509/ca_cert.pem"
+	creds, err := credentials.NewClientTLSFromFile(*caFile, *serverHostOverride)
+	if err != nil {
+		log.Fatalf("Faild to create TLS credentials : %v", err)
+	}
+	opts = append(opts, grpc.WithTransportCredentials(creds))
+
+	// opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+	conn, err := grpc.Dial(*serverAddr, opts...)
+	if err != nil {
+		log.Fatalf("fail to dial : %v", err)
+	}
+	defer conn.Close()
 
 	c := user_pb.NewUserInfoClient(conn)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
+	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second)
+	defer cancelFunc()
 
 	res, err := c.AddUser(ctx, &user_pb.User{
 		UserID:      "1",
