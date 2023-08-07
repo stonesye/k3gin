@@ -36,7 +36,7 @@ func NewUserInfoClient(cc grpc.ClientConnInterface) UserInfoClient {
 
 func (c *userInfoClient) AddUser(ctx context.Context, in *User, opts ...grpc.CallOption) (*UserID, error) {
 	out := new(UserID)
-	err := c.cc.Invoke(ctx, "/user_pb.UserInfo/addUser", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/user_pb.UserInfo/AddUser", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func (c *userInfoClient) AddUser(ctx context.Context, in *User, opts ...grpc.Cal
 
 func (c *userInfoClient) GetUser(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*User, error) {
 	out := new(User)
-	err := c.cc.Invoke(ctx, "/user_pb.UserInfo/getUser", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/user_pb.UserInfo/GetUser", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func _UserInfo_AddUser_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/user_pb.UserInfo/addUser",
+		FullMethod: "/user_pb.UserInfo/AddUser",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserInfoServer).AddUser(ctx, req.(*User))
@@ -112,7 +112,7 @@ func _UserInfo_GetUser_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/user_pb.UserInfo/getUser",
+		FullMethod: "/user_pb.UserInfo/GetUser",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserInfoServer).GetUser(ctx, req.(*UserID))
@@ -128,11 +128,11 @@ var UserInfo_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*UserInfoServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "addUser",
+			MethodName: "AddUser",
 			Handler:    _UserInfo_AddUser_Handler,
 		},
 		{
-			MethodName: "getUser",
+			MethodName: "GetUser",
 			Handler:    _UserInfo_GetUser_Handler,
 		},
 	},
