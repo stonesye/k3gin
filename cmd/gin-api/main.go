@@ -7,6 +7,7 @@ import (
 	"k3gin/app"
 	"k3gin/app/contextx"
 	"k3gin/app/cron"
+	"k3gin/app/grpcx"
 	"k3gin/app/logger"
 	_ "k3gin/cmd/gin-api/docs"
 	"os"
@@ -43,11 +44,31 @@ func main() {
 	cliApp.Commands = []*cli.Command{
 		cmdWeb(ctx),
 		cmdCron(ctx),
+		cmdRpc(ctx),
 	}
 
 	// 命令行包cli 的Run函数 其实是执行 Commands 下所有的 cli.Command 中的 Action 指定的函数
 	if err := cliApp.Run(os.Args); err != nil {
 		logger.WithContext(ctx).Errorf(err.Error())
+	}
+}
+
+func cmdRpc(ctx context.Context) *cli.Command {
+	return &cli.Command{
+		Name:  "rpc",
+		Usage: "Run grpc server group",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:     "conf",
+				Aliases:  []string{"c"},
+				Usage:    "App configuration file(.json, .yaml, .toml)",
+				Required: true,
+			},
+		},
+
+		Action: func(c *cli.Context) error {
+			return grpcx.Run(ctx, grpcx.WithVersion(VERSION), grpcx.WithConfigFile(c.String("conf")))
+		},
 	}
 }
 
