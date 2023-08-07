@@ -40,7 +40,7 @@ KeyFile = ""
 # 客户端证书地址
 CACert = ""
 # http优雅关闭等待超时时长(单位秒)
-ShutdownTimeout = 30
+ShutdownTimeout = 1
 
 
 [Log]

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"k3gin/app/gin_grpc/user_pb"
+	"k3gin/app/grpcx/user_pb"
 	"log"
 	"net"
 )
