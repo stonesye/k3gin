@@ -65,8 +65,11 @@ func Run(ctx context.Context, opts ...func(*options)) error {
 	}
 	// 初始化config
 	config.MustLoad(o.ConfigFile)
+	config.PrintWithJSON()
+	logger.WithContext(ctx).Printf("Start #CRON# server, #run_mode %s,#version %s,#pid %d", config.C.RunMode, o.Version, os.Getpid())
+
 	// 初始化looger
-	logger.InitLogger()
+	cleanFunc, err := logger.InitLogger()
 
 	// 初始化主要的组件
 
@@ -78,6 +81,7 @@ func Run(ctx context.Context, opts ...func(*options)) error {
 
 	stat := WaitGraceExit(ctx, server.gserver)
 	fmt.Println(stat)
+	cleanFunc()
 
-	return nil
+	return err
 }
