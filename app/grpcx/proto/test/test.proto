@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "/Users/yelei/data/code/go-projects/k3gin/app/grpcx/proto/test";
+
+service TestInfo {
+    rpc AddSomething(Test) returns (TestID) {}
+}
+
+message Test {
+  string ID = 1;
+  string content = 2;
+  bool flag = 3;
+}
+
+message TestID {
+  string ID = 1;
+}
+
+
+
