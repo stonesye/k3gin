@@ -71,15 +71,16 @@ func Run(ctx context.Context, opts ...func(*options)) error {
 	// 初始化looger
 	cleanFunc, err := logger.InitLogger()
 
-	// 初始化主要的组件
+	// 初始化主要的组件, db, redis, http
 
 	// 初始化grpc服务端TCP协议
 
+	// 过滤器
+
 	// 优雅退出
+	stat := WaitGraceExit(ctx, server.gserver)
 
 	// 清理多余的数据
-
-	stat := WaitGraceExit(ctx, server.gserver)
 	fmt.Println(stat)
 	cleanFunc()
 
