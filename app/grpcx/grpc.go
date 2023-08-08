@@ -66,9 +66,9 @@ func Run(ctx context.Context, opts ...func(*options)) error {
 	// 初始化config
 	config.MustLoad(o.ConfigFile)
 	config.PrintWithJSON()
-	logger.WithContext(ctx).Printf("Start #CRON# server, #run_mode %s,#version %s,#pid %d", config.C.RunMode, o.Version, os.Getpid())
+	logger.WithContext(ctx).Printf("Start #GRPC# server, #run_mode %s,#version %s,#pid %d", config.C.RunMode, o.Version, os.Getpid())
 
-	// 初始化looger
+	// 初始化logger
 	cleanFunc, err := logger.InitLogger()
 
 	// 初始化主要的组件, db, redis, http
