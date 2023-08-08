@@ -34,7 +34,7 @@ func WithVersion(version string) func(*options) {
 }
 
 // WaitGraceExit 优雅退出
-func WaitGraceExit(ctx context.Context) int {
+func waitGraceExit(ctx context.Context) int {
 	var stat = 1
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGINT, syscall.SIGTERM)
@@ -57,7 +57,7 @@ func WaitGraceExit(ctx context.Context) int {
 }
 
 // InitGRPCServer 初始化RPC服务器
-func InitGRPCServer(ctx context.Context, registers ...func(*grpc.Server)) func() {
+func initGRPCServer(ctx context.Context, registers ...func(*grpc.Server)) func() {
 	var serv *grpc.Server
 	cfg := config.C.GRPC
 
@@ -98,6 +98,9 @@ func InitGRPCServer(ctx context.Context, registers ...func(*grpc.Server)) func()
 	}
 }
 
+type RPC struct {
+}
+
 func Run(ctx context.Context, opts ...func(*options)) error {
 	var o options
 
@@ -125,9 +128,9 @@ func Run(ctx context.Context, opts ...func(*options)) error {
 	// 过滤器
 
 	// 初始化grpc服务端TCP协议
-	grpcServerCleanFunc := InitGRPCServer(ctx)
+	grpcServerCleanFunc := initGRPCServer(ctx)
 	// 优雅退出
-	stat := WaitGraceExit(ctx)
+	stat := waitGraceExit(ctx)
 
 	// 清理多余的数据
 	logCleanFunc()
