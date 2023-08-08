@@ -4,10 +4,14 @@ import (
 	"context"
 	"fmt"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"k3gin/app/config"
+	"k3gin/app/contextx"
 	"k3gin/app/logger"
+	"net"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 )
@@ -29,12 +33,8 @@ func WithVersion(version string) func(*options) {
 	}
 }
 
-type Server struct {
-	gserver *grpc.Server
-}
-
 // WaitGraceExit 优雅退出
-func WaitGraceExit(ctx context.Context, server *grpc.Server) int {
+func WaitGraceExit(ctx context.Context) int {
 	var stat = 1
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGINT, syscall.SIGTERM)
@@ -56,8 +56,49 @@ func WaitGraceExit(ctx context.Context, server *grpc.Server) int {
 	}
 }
 
+// InitGRPCServer 初始化RPC服务器
+func InitGRPCServer(ctx context.Context, registers ...func(*grpc.Server)) func() {
+	var serv *grpc.Server
+	cfg := config.C.GRPC
+
+	addr := fmt.Sprintf("%s:%s", cfg.Host, strconv.Itoa(cfg.Port))
+	lis, err := net.Listen("tcp", addr)
+
+	if err != nil {
+		logger.WithContext(ctx).Fatalf("failed to listen: %v", err)
+	}
+
+	go func() {
+		var opts []grpc.ServerOption
+
+		// 如果是TLS 写入TLS参数
+		if cfg.CertFile != "" && cfg.KeyFile != "" {
+			creds, err := credentials.NewServerTLSFromFile(cfg.CertFile, cfg.KeyFile)
+			if err != nil {
+				logger.WithContext(ctx).Fatalf("fialed to generate credentials : %v", err)
+			}
+			opts = []grpc.ServerOption{grpc.Creds(creds)}
+		}
+
+		serv = grpc.NewServer(opts...)
+
+		// 注册grpc的proto对象
+		for _, register := range registers {
+			register(serv)
+		}
+
+		if err := serv.Serve(lis); err != nil {
+			logger.WithContext(ctx).Fatalf("failed to server : %v", err)
+		}
+	}()
+
+	return func() {
+		logger.WithContext(contextx.NewTag(ctx, "__grpc__")).Infof("Stop grpc.server !")
+		serv.Stop()
+	}
+}
+
 func Run(ctx context.Context, opts ...func(*options)) error {
-	var server Server
 	var o options
 
 	for _, opt := range opts {
@@ -69,20 +110,29 @@ func Run(ctx context.Context, opts ...func(*options)) error {
 	logger.WithContext(ctx).Printf("Start #GRPC# server, #run_mode %s,#version %s,#pid %d", config.C.RunMode, o.Version, os.Getpid())
 
 	// 初始化logger
-	cleanFunc, err := logger.InitLogger()
+	logCleanFunc, err := logger.InitLogger()
+	if err != nil {
+		return err
+	}
 
 	// 初始化主要的组件, db, redis, http
-
-	// 初始化grpc服务端TCP协议
+	/**
+	db, cleanFunc, err := gormx.InitGormDB()
+	store, cleanFunc, err := redisx.InitRedisStore()
+	client, cleanFunc, err := httpx.InitHttp()
+	*/
 
 	// 过滤器
 
+	// 初始化grpc服务端TCP协议
+	grpcServerCleanFunc := InitGRPCServer(ctx)
 	// 优雅退出
-	stat := WaitGraceExit(ctx, server.gserver)
+	stat := WaitGraceExit(ctx)
 
 	// 清理多余的数据
-	fmt.Println(stat)
-	cleanFunc()
-
-	return err
+	logCleanFunc()
+	grpcServerCleanFunc()
+	logger.WithContext(ctx).Info("GRPC server will been exit !")
+	os.Exit(stat)
+	return nil
 }
