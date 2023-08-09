@@ -3,6 +3,9 @@ package test
 import (
 	"context"
 	"errors"
+	"fmt"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
 	"io"
 	"k3gin/app/logger"
 )
@@ -44,4 +47,47 @@ func (x *TestRealize) ServerStreamEcho(server TestInfo_ServerStreamEchoServer) e
 			return err
 		}
 	}
+}
+
+func CallServerGetTestID(ctx context.Context, client TestInfoClient, test *Test, opts ...grpc.CallOption) error {
+	id, err := client.ServerGetTestID(ctx, test, opts...)
+	if err != nil {
+		return status.Errorf(status.Code(err), "ServerGetTestID RPC failed : %v", err)
+	}
+
+	logger.WithContext(ctx).Infof("ServerGetTestID: %v", id)
+
+	return nil
+}
+
+func CallServerStreamEcho(ctx context.Context, client TestInfoClient, reqeust *TestRequest, opts ...grpc.CallOption) error {
+
+	c, err := client.ServerStreamEcho(ctx, opts...)
+
+	if err != nil {
+		return status.Errorf(status.Code(err), "ServerStreamEcho RPC failed : %v", err)
+	}
+
+	for i := 0; i < 5; i++ {
+		err = c.Send(reqeust)
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			return status.Errorf(status.Code(err), "sending  message: %v", err)
+		}
+	}
+	c.CloseSend()
+	for {
+		resp, err := c.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return status.Errorf(status.Code(err), "receiving  message: %v", err)
+		}
+		fmt.Println(" Echo: ", resp.Message)
+	}
+	return nil
 }
