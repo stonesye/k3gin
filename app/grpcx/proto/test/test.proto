@@ -5,7 +5,8 @@ package proto;
 option go_package = "/Users/yelei/data/code/go-projects/k3gin/app/grpcx/proto/test";
 
 service TestInfo {
-    rpc AddSomething(Test) returns (TestID) {}
+    rpc ServerGetTestID(Test) returns (TestID) {}
+    rpc ServerStreamEcho(stream TestRequest) returns(stream TestResponse) {}
 }
 
 message Test {
@@ -16,6 +17,14 @@ message Test {
 
 message TestID {
   string ID = 1;
+}
+
+message TestRequest {
+  string message = 1;
+}
+
+message TestResponse {
+  string message  = 1;
 }
 
 
