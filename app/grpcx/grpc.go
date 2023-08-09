@@ -56,6 +56,9 @@ func waitGraceExit(ctx context.Context) int {
 	}
 }
 
+type RPC struct {
+}
+
 // InitGRPCServer 初始化RPC服务器
 func initGRPCServer(ctx context.Context, registers ...func(*grpc.Server)) func() {
 	var serv *grpc.Server
@@ -98,9 +101,6 @@ func initGRPCServer(ctx context.Context, registers ...func(*grpc.Server)) func()
 	}
 }
 
-type RPC struct {
-}
-
 func Run(ctx context.Context, opts ...func(*options)) error {
 	var o options
 
@@ -123,6 +123,10 @@ func Run(ctx context.Context, opts ...func(*options)) error {
 	db, cleanFunc, err := gormx.InitGormDB()
 	store, cleanFunc, err := redisx.InitRedisStore()
 	client, cleanFunc, err := httpx.InitHttp()
+
+
+
+
 	*/
 
 	// 过滤器
