@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc/credentials"
 	"k3gin/app/config"
 	"k3gin/app/contextx"
+	"k3gin/app/grpcx/proto/test"
 	"k3gin/app/logger"
 	"net"
 	"os"
@@ -132,7 +133,7 @@ func Run(ctx context.Context, opts ...func(*options)) error {
 	// 过滤器
 
 	// 初始化grpc服务端TCP协议
-	grpcServerCleanFunc := initGRPCServer(ctx)
+	grpcServerCleanFunc := initGRPCServer(ctx, useTestRealize)
 	// 优雅退出
 	stat := waitGraceExit(ctx)
 
@@ -142,4 +143,8 @@ func Run(ctx context.Context, opts ...func(*options)) error {
 	logger.WithContext(ctx).Info("GRPC server will been exit !")
 	os.Exit(stat)
 	return nil
+}
+
+func useTestRealize(server *grpc.Server) {
+	test.RegisterTestInfoServer(server, &test.TestRealize{})
 }
