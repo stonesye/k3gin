@@ -11,6 +11,11 @@ import (
 	"strconv"
 )
 
+/**
+放在wire初始化里面
+*/
+
+// InitClientRPC
 func InitClientRPC() (*grpc.ClientConn, func(), error) {
 	var C = config.C.GRPC
 
@@ -36,6 +41,59 @@ func InitClientRPC() (*grpc.ClientConn, func(), error) {
 		return nil, nil, err
 	}
 
+	return conn, func() {
+		conn.Close()
+	}, nil
+}
+
+type ClientRPC struct {
+	TLS          bool
+	CaFile       string
+	Address      string
+	HostOverride string
+}
+
+func WithClientRPCTLS(tls bool) func(*ClientRPC) {
+	return func(rpc *ClientRPC) {
+		rpc.TLS = tls
+	}
+}
+
+func WithClientCaFile(caFile string) func(*ClientRPC) {
+	return func(rpc *ClientRPC) {
+		rpc.CaFile = caFile
+	}
+}
+
+func WithClientAddress(address string) func(*ClientRPC) {
+	return func(rpc *ClientRPC) {
+		rpc.Address = address
+	}
+}
+
+func WithHostOverride(hostOverride string) func(*ClientRPC) {
+	return func(rpc *ClientRPC) {
+		rpc.HostOverride = hostOverride
+	}
+}
+
+func NewClientRPC(client *ClientRPC) (*grpc.ClientConn, func(), error) {
+	var opts []grpc.DialOption
+	if client.TLS {
+		creds, err := credentials.NewClientTLSFromFile(client.CaFile, client.HostOverride)
+		if err != nil {
+			return nil, nil, err
+		}
+		opts = append(opts, grpc.WithTransportCredentials(creds))
+	} else {
+		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	}
+
+	conn, err := grpc.Dial(client.Address, opts...)
+	if err != nil {
+
+		return nil, nil, err
+	}
 	return conn, func() {
 		conn.Close()
 	}, nil
