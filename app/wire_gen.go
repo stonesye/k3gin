@@ -11,6 +11,7 @@ import (
 	"k3gin/app/cache/redisx"
 	"k3gin/app/dao/user"
 	"k3gin/app/gormx"
+	"k3gin/app/grpcx"
 	"k3gin/app/httpx"
 	"k3gin/app/router"
 	"k3gin/app/service"
@@ -48,12 +49,21 @@ func BuildInjector() (*Injector, func(), error) {
 		cleanup()
 		return nil, nil, err
 	}
+	clientConn, cleanup4, err := grpcx.InitClientRPC()
+	if err != nil {
+		cleanup3()
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
 	injector := &Injector{
 		Engine:     engine,
 		HttpClient: client,
 		RedisStore: store,
+		GrpcClient: clientConn,
 	}
 	return injector, func() {
+		cleanup4()
 		cleanup3()
 		cleanup2()
 		cleanup()

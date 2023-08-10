@@ -95,14 +95,15 @@ func initGRPCServer(ctx context.Context, registers ...func(*grpc.Server)) func()
 			opts = []grpc.ServerOption{grpc.Creds(creds)}
 		}
 
+		// stream 和 常规 recovery拦截
 		opts = append(opts, grpc.ChainUnaryInterceptor(recovery.UnaryServerInterceptor(recovery.WithRecoveryHandler(func(i interface{}) error {
 			fmt.Printf("panic triggered : %v\n", i)
-			return status.Errorf(codes.Unknown, "panic triggered :%v", i)
+			return status.Errorf(codes.Unknown, "GRPC :%v", i)
 		}))))
 
 		opts = append(opts, grpc.ChainStreamInterceptor(recovery.StreamServerInterceptor(recovery.WithRecoveryHandler(func(i interface{}) error {
 			fmt.Printf("panic triggered : %v\n", i)
-			return status.Errorf(codes.Unknown, "panic triggered :%v", i)
+			return status.Errorf(codes.Unknown, "GRPC-Stream :%v", i)
 		}))))
 
 		serv = grpc.NewServer(opts...)
@@ -139,15 +140,6 @@ func Run(ctx context.Context, opts ...func(*options)) error {
 	if err != nil {
 		return err
 	}
-
-	// 初始化主要的组件, db, redis, http
-	/**
-	db, cleanFunc, err := gormx.InitGormDB()
-	store, cleanFunc, err := redisx.InitRedisStore()
-	client, cleanFunc, err := httpx.InitHttp()
-	*/
-
-	// 过滤器
 
 	// 初始化grpc服务端TCP协议
 	grpcServerCleanFunc := initGRPCServer(ctx, useTestRealize)
