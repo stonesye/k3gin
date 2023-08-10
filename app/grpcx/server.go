@@ -97,12 +97,12 @@ func initGRPCServer(ctx context.Context, registers ...func(*grpc.Server)) func()
 
 		// stream 和 常规 recovery拦截
 		opts = append(opts, grpc.ChainUnaryInterceptor(recovery.UnaryServerInterceptor(recovery.WithRecoveryHandler(func(i interface{}) error {
-			fmt.Printf("panic triggered : %v\n", i)
+			logger.WithContext(ctx).WithField("stack", "").Errorf("panic error: %v", i)
 			return status.Errorf(codes.Unknown, "GRPC :%v", i)
 		}))))
 
 		opts = append(opts, grpc.ChainStreamInterceptor(recovery.StreamServerInterceptor(recovery.WithRecoveryHandler(func(i interface{}) error {
-			fmt.Printf("panic triggered : %v\n", i)
+			logger.WithContext(ctx).WithField("stack", "").Errorf("panic error: %v", i)
 			return status.Errorf(codes.Unknown, "GRPC-Stream :%v", i)
 		}))))
 
