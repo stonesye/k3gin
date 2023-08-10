@@ -31,9 +31,11 @@ MaxContentLength = 67108864
 [GRPC]
 # rpc监听的地址
 Host = "0.0.0.0"
+# HostOverride
+HostOverride = "x.test.example.com"
 # rpc监听端口
 Port = 50051
-# 证书路径a
+# 证书路径
 CerFile = ""
 # 证书密钥地址
 KeyFile = ""

@@ -125,9 +125,6 @@ func Run(ctx context.Context, opts ...func(*options)) error {
 	store, cleanFunc, err := redisx.InitRedisStore()
 	client, cleanFunc, err := httpx.InitHttp()
 
-
-
-
 	*/
 
 	// 过滤器

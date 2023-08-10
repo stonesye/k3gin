@@ -79,6 +79,7 @@ type Config struct {
 
 type GRPC struct {
 	Host            string
+	HostOverride    string
 	Port            int
 	CertFile        string
 	KeyFile         string

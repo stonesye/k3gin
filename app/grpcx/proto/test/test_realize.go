@@ -60,7 +60,7 @@ func CallServerGetTestID(ctx context.Context, client TestInfoClient, test *Test,
 	return nil
 }
 
-func CallServerStreamEcho(ctx context.Context, client TestInfoClient, reqeust *TestRequest, opts ...grpc.CallOption) error {
+func CallServerStreamEcho(ctx context.Context, client TestInfoClient, request *TestRequest, opts ...grpc.CallOption) error {
 
 	c, err := client.ServerStreamEcho(ctx, opts...)
 
@@ -69,7 +69,7 @@ func CallServerStreamEcho(ctx context.Context, client TestInfoClient, reqeust *T
 	}
 
 	for i := 0; i < 5; i++ {
-		err = c.Send(reqeust)
+		err = c.Send(request)
 		if err == io.EOF {
 			break
 		}
@@ -79,6 +79,7 @@ func CallServerStreamEcho(ctx context.Context, client TestInfoClient, reqeust *T
 		}
 	}
 	c.CloseSend()
+
 	for {
 		resp, err := c.Recv()
 		if err == io.EOF {
