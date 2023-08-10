@@ -68,7 +68,7 @@ func CallServerStreamEcho(ctx context.Context, client TestInfoClient, request *T
 		return status.Errorf(status.Code(err), "ServerStreamEcho RPC failed : %v", err)
 	}
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 5; i++ { // 为了测试 发5次信息给服务端
 		err = c.Send(request)
 		if err == io.EOF {
 			break
@@ -81,14 +81,14 @@ func CallServerStreamEcho(ctx context.Context, client TestInfoClient, request *T
 	c.CloseSend()
 
 	for {
-		resp, err := c.Recv()
+		resp, err := c.Recv() // 一直收数据
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
 			return status.Errorf(status.Code(err), "receiving  message: %v", err)
 		}
-		fmt.Println(" Echo: ", resp.Message)
+		fmt.Println("Receive: ", resp.Message)
 	}
 	return nil
 }

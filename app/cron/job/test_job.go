@@ -3,6 +3,8 @@ package job
 import (
 	"fmt"
 	"k3gin/app/cron/context"
+	"k3gin/app/grpcx/proto/test"
+	"k3gin/app/logger"
 	"time"
 )
 
@@ -21,4 +23,27 @@ func TestJob(ctx *context.FrameContext) {
 func TestTimeoutJob(ctx *context.Context) {
 	<-ctx.Done()
 	fmt.Println(ctx)
+}
+
+func TestGRPC(ctx *context.FrameContext) {
+
+	c := ctx.GrpcClient
+
+	client := test.NewTestInfoClient(c)
+
+	err := test.CallServerGetTestID(ctx, client, &test.Test{
+		ID:      "1",
+		Content: "Test RPC",
+		Flag:    true,
+	})
+
+	if err != nil {
+		logger.WithContext(ctx).Errorf("received error : %v", err)
+	}
+
+	err = test.CallServerStreamEcho(ctx, client, &test.TestRequest{Message: "RPC stream Testing "})
+	if err != nil {
+		logger.WithContext(ctx).Errorf("received error : %v", err)
+	}
+
 }

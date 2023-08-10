@@ -15,7 +15,7 @@ import (
 放在wire初始化里面
 */
 
-// InitClientRPC
+// InitClientRPC 初始化GRPC Client
 func InitClientRPC() (*grpc.ClientConn, func(), error) {
 	var C = config.C.GRPC
 

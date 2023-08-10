@@ -2,6 +2,7 @@ package context
 
 import (
 	"context"
+	"google.golang.org/grpc"
 	"k3gin/app/cache/redisx"
 	"k3gin/app/gormx"
 	"k3gin/app/httpx"
@@ -13,6 +14,7 @@ type FrameContext struct {
 	HttpClient  *httpx.Client
 	DB          *gormx.DB
 	Store       *redisx.Store
+	GrpcClient  *grpc.ClientConn
 	CronContext *Context
 }
 

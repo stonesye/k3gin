@@ -9,6 +9,7 @@ package cron
 import (
 	"k3gin/app/cache/redisx"
 	"k3gin/app/gormx"
+	"k3gin/app/grpcx"
 	"k3gin/app/httpx"
 )
 
@@ -31,13 +32,22 @@ func BuildCronInject() (*Cron, func(), error) {
 		cleanup()
 		return nil, nil, err
 	}
+	clientConn, cleanup4, err := grpcx.InitClientRPC()
+	if err != nil {
+		cleanup3()
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
 	cronCron := &Cron{
 		V3Cron:     cron,
 		HttpClient: client,
 		DB:         db,
 		Store:      store,
+		GrpcClient: clientConn,
 	}
 	return cronCron, func() {
+		cleanup4()
 		cleanup3()
 		cleanup2()
 		cleanup()

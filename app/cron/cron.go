@@ -5,6 +5,7 @@ import (
 	"github.com/google/wire"
 	v3cron "github.com/robfig/cron/v3"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 	"k3gin/app/cache/redisx"
 	"k3gin/app/config"
 	croncontext "k3gin/app/cron/context"
@@ -42,10 +43,11 @@ type Cron struct {
 	HttpClient     *httpx.Client
 	DB             *gormx.DB
 	Store          *redisx.Store
+	GrpcClient     *grpc.ClientConn
 	GlobalJobFuncs []func(*croncontext.Context) // 所有Cron都需要执行的任务
 }
 
-var CronSet = wire.NewSet(wire.Struct(new(Cron), "V3Cron", "HttpClient", "DB", "Store"))
+var CronSet = wire.NewSet(wire.Struct(new(Cron), "V3Cron", "HttpClient", "DB", "Store", "GrpcClient"))
 
 // waitGraceExit 优雅退出
 func (cron *Cron) waitGraceExit(ctx context.Context) int {
@@ -110,6 +112,7 @@ func (cron *Cron) WithFrameContext(handle func(*croncontext.FrameContext)) func(
 			HttpClient:  cron.HttpClient,
 			DB:          cron.DB,
 			Store:       cron.Store,
+			GrpcClient:  cron.GrpcClient,
 			CronContext: ctx,
 		}
 		handle(frameCtx)
@@ -164,7 +167,8 @@ func Run(ctx context.Context, opts ...Option) error {
 // Register 注册所有的Cron任务
 func Register(cron *Cron) (_err error) {
 	// cron.AddJob("userjob", "* * * * * *", cron.WithFrameContext(UserJob))
-	_err = cron.AddJob("userjob", "* * * * * *", cron.WithFrameContext(job.TestJob))
-	_err = cron.AddJob("Task2", "* * * * * *", job.TimeoutGlobalJob(5*time.Second), job.TestTimeoutJob)
+	// _err = cron.AddJob("userjob", "* * * * * *", cron.WithFrameContext(job.TestJob))
+	// _err = cron.AddJob("Task2", "* * * * * *", job.TimeoutGlobalJob(5*time.Second), job.TestTimeoutJob)
+	_err = cron.AddJob("GRPC", "*/5 * * * * *", cron.WithFrameContext(job.TestGRPC))
 	return
 }
