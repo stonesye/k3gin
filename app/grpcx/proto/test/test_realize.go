@@ -92,3 +92,7 @@ func CallServerStreamEcho(ctx context.Context, client TestInfoClient, request *T
 	}
 	return nil
 }
+
+/**
+2、server和client函数都需要引入base工具
+*/

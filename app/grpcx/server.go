@@ -4,10 +4,16 @@ import (
 	"context"
 	"fmt"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/status"
+	"k3gin/app/cache/redisx"
 	"k3gin/app/config"
 	"k3gin/app/contextx"
+	"k3gin/app/gormx"
 	"k3gin/app/grpcx/proto/test"
+	"k3gin/app/grpcx/recovery"
+	"k3gin/app/httpx"
 	"k3gin/app/logger"
 	"net"
 	"os"
@@ -57,7 +63,12 @@ func waitGraceExit(ctx context.Context) int {
 	}
 }
 
-type RPC struct {
+type ContextRPC struct {
+	context.Context
+	HttpClient *httpx.Client
+	DB         *gormx.DB
+	Store      *redisx.Store
+	GrpcClient *grpc.ClientConn
 }
 
 // InitGRPCServer 初始化RPC服务器
@@ -83,6 +94,16 @@ func initGRPCServer(ctx context.Context, registers ...func(*grpc.Server)) func()
 			}
 			opts = []grpc.ServerOption{grpc.Creds(creds)}
 		}
+
+		opts = append(opts, grpc.ChainUnaryInterceptor(recovery.UnaryServerInterceptor(recovery.WithRecoveryHandler(func(i interface{}) error {
+			fmt.Printf("panic triggered : %v\n", i)
+			return status.Errorf(codes.Unknown, "panic triggered :%v", i)
+		}))))
+
+		opts = append(opts, grpc.ChainStreamInterceptor(recovery.StreamServerInterceptor(recovery.WithRecoveryHandler(func(i interface{}) error {
+			fmt.Printf("panic triggered : %v\n", i)
+			return status.Errorf(codes.Unknown, "panic triggered :%v", i)
+		}))))
 
 		serv = grpc.NewServer(opts...)
 
@@ -124,7 +145,6 @@ func Run(ctx context.Context, opts ...func(*options)) error {
 	db, cleanFunc, err := gormx.InitGormDB()
 	store, cleanFunc, err := redisx.InitRedisStore()
 	client, cleanFunc, err := httpx.InitHttp()
-
 	*/
 
 	// 过滤器
@@ -143,5 +163,6 @@ func Run(ctx context.Context, opts ...func(*options)) error {
 }
 
 func useTestRealize(server *grpc.Server) {
+
 	test.RegisterTestInfoServer(server, &test.TestRealize{})
 }
