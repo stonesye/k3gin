@@ -28,6 +28,9 @@ cron :
 rpc :
 	@go run -ldflags "-X main.VERSION=$(RELEASE_TAG)" ./cmd/${APP}/main.go rpc -c ./configs/config.toml
 
+ws :
+	@go run -ldflags "-X main.VERSION=$(RELEASE_TAG)" ./cmd/${APP}/main.go ws -c ./configs/config.toml
+
 swagger:
 	@swag init --parseDependency --generalInfo ./cmd/${APP}/main.go --output ./cmd/${APP}/docs
 
