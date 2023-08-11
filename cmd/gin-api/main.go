@@ -9,6 +9,7 @@ import (
 	"k3gin/app/cron"
 	"k3gin/app/grpcx"
 	"k3gin/app/logger"
+	"k3gin/app/ws"
 	_ "k3gin/cmd/gin-api/docs"
 	"os"
 	"runtime"
@@ -45,12 +46,32 @@ func main() {
 		cmdWeb(ctx),
 		cmdCron(ctx),
 		cmdRpc(ctx),
+		cmdWS(ctx),
 	}
 
 	// 命令行包cli 的Run函数 其实是执行 Commands 下所有的 cli.Command 中的 Action 指定的函数
 	if err := cliApp.Run(os.Args); err != nil {
 		logger.WithContext(ctx).Errorf(err.Error())
 	}
+}
+
+func cmdWS(ctx context.Context) *cli.Command {
+	return &cli.Command{
+		Name:  "ws",
+		Usage: "Run websocket server group",
+		Action: func(c *cli.Context) error {
+			return ws.Run(ctx)
+		},
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:     "conf",
+				Aliases:  []string{"c"},
+				Usage:    "App configuration file(.json, .yaml, .toml)",
+				Required: true,
+			},
+		},
+	}
+
 }
 
 func cmdRpc(ctx context.Context) *cli.Command {
