@@ -114,3 +114,14 @@ func waitGraceExit(ctx context.Context) (stat int) {
 		}
 	}
 }
+
+type WS struct {
+}
+
+func (w *WS) ServerHTTP(resp http.ResponseWriter, req *http.Request) {
+
+}
+
+func (w *WS) AddPath(path string) {
+
+}
