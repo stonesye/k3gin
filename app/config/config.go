@@ -75,6 +75,7 @@ type Config struct {
 	Redis       Redis
 	Cron        Cron
 	GRPC        GRPC
+	WebSocket   WebSocket
 }
 
 type GRPC struct {
@@ -94,6 +95,15 @@ type Cron struct {
 type SESSION struct {
 	Enable bool
 	Secret string
+}
+
+type WebSocket struct {
+	Host             string
+	Port             int
+	CertFile         string
+	KeyFile          string
+	ShutdownTimeout  int
+	MaxContentLength int64
 }
 
 type HTTP struct {

@@ -2,11 +2,17 @@ package ws
 
 import (
 	"context"
+	"crypto/tls"
+	"fmt"
+	"github.com/gorilla/websocket"
 	"k3gin/app/config"
 	"k3gin/app/logger"
+	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
+	"time"
 )
 
 type options struct {
@@ -51,6 +57,42 @@ func Run(ctx context.Context, opts ...func(*options)) error {
 	logger.WithContext(ctx).Info("Websocket will been stop ...")
 	cleanFunc()
 	return nil
+}
+
+func InitWebsocket(ctx context.Context, handler http.Handler) (cleanFunc func()) {
+	var upgrader = websocket.Upgrader{}
+	var C = config.C.WebSocket
+
+	srv := &http.Server{
+		Addr:         fmt.Sprintf("%s:%s", C.Host, strconv.Itoa(C.Port)),
+		Handler:      handler,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 30 * time.Second,
+		IdleTimeout:  30 * time.Second,
+	}
+
+	go func() {
+		var err error
+		if C.KeyFile != "" && C.CertFile != "" {
+			srv.TLSConfig = &tls.Config{MinVersion: tls.VersionTLS12}
+			err = srv.ListenAndServeTLS(C.CertFile, C.KeyFile)
+		} else {
+			err = srv.ListenAndServe()
+		}
+		if err != nil && err != http.ErrServerClosed {
+			panic(err)
+		}
+	}()
+
+	cleanFunc = func() {
+		srv.SetKeepAlivesEnabled(false)
+		ctx, cancel := context.WithTimeout(ctx, time.Duration(C.ShutdownTimeout)*time.Second)
+		defer cancel()
+		if err := srv.Shutdown(ctx); err != nil {
+			logger.WithContext(ctx).Errorf("Websocket shutdown err : %v", err.Error())
+		}
+	}
+	return
 }
 
 func waitGraceExit(ctx context.Context) (stat int) {
