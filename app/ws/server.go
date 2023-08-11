@@ -49,6 +49,7 @@ func Run(ctx context.Context, opts ...func(*options)) error {
 	}
 
 	// 初始化websocket
+	InitWebsocket(ctx, handler)
 
 	// 处理优雅退出
 	waitGraceExit(ctx)
