@@ -60,7 +60,7 @@ func cmdWS(ctx context.Context) *cli.Command {
 		Name:  "ws",
 		Usage: "Run websocket server group",
 		Action: func(c *cli.Context) error {
-			return ws.Run(ctx, ws.WithConfigFile(c.String("conf")), ws.WihtVerion(VERSION))
+			return ws.Run(ctx, ws.WithConfigFile(c.String("conf")), ws.WithVersion(VERSION))
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{

@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"github.com/gorilla/websocket"
 	"k3gin/app/config"
 	"k3gin/app/logger"
 	"net/http"
@@ -26,7 +25,7 @@ func WithConfigFile(configFile string) func(*options) {
 	}
 }
 
-func WihtVerion(version string) func(*options) {
+func WithVersion(version string) func(*options) {
 	return func(o *options) {
 		o.version = version
 	}
@@ -60,7 +59,7 @@ func Run(ctx context.Context, opts ...func(*options)) error {
 }
 
 func InitWebsocket(ctx context.Context, handler http.Handler) (cleanFunc func()) {
-	var upgrader = websocket.Upgrader{}
+
 	var C = config.C.WebSocket
 
 	srv := &http.Server{
