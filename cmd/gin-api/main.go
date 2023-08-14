@@ -42,12 +42,7 @@ func main() {
 	cliApp.Name = "k3-gin"
 	cliApp.Version = VERSION
 	cliApp.Usage = "K3-GIN based on gin + gorm + wire + logrus + rotatelogs + robfig-cron + swagger."
-	cliApp.Commands = []*cli.Command{
-		cmdWEB(ctx),
-		cmdCRON(ctx),
-		cmdRPC(ctx),
-		cmdWS(ctx),
-	}
+	cliApp.Commands = []*cli.Command{cliWeb(ctx), cliCron(ctx), cliGrpc(ctx), cliWebsocket(ctx)}
 
 	// 命令行包cli 的Run函数 其实是执行 Commands 下所有的 cli.Command 中的 Action 指定的函数
 	if err := cliApp.Run(os.Args); err != nil {
@@ -55,7 +50,7 @@ func main() {
 	}
 }
 
-func cmdWS(ctx context.Context) *cli.Command {
+func cliWebsocket(ctx context.Context) *cli.Command {
 	return &cli.Command{
 		Name:  "ws",
 		Usage: "Run websocket server group",
@@ -74,7 +69,7 @@ func cmdWS(ctx context.Context) *cli.Command {
 
 }
 
-func cmdRPC(ctx context.Context) *cli.Command {
+func cliGrpc(ctx context.Context) *cli.Command {
 	return &cli.Command{
 		Name:  "rpc",
 		Usage: "Run grpc server group",
@@ -93,7 +88,7 @@ func cmdRPC(ctx context.Context) *cli.Command {
 	}
 }
 
-func cmdCRON(ctx context.Context) *cli.Command {
+func cliCron(ctx context.Context) *cli.Command {
 	return &cli.Command{
 		Name:  "cron",
 		Usage: "Run cron server group",
@@ -114,7 +109,7 @@ func cmdCRON(ctx context.Context) *cli.Command {
 	}
 }
 
-func cmdWEB(ctx context.Context) *cli.Command {
+func cliWeb(ctx context.Context) *cli.Command {
 	return &cli.Command{
 		Name:  "web",
 		Usage: "Run http server group",
