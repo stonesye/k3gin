@@ -43,9 +43,9 @@ func main() {
 	cliApp.Version = VERSION
 	cliApp.Usage = "K3-GIN based on gin + gorm + wire + logrus + rotatelogs + robfig-cron + swagger."
 	cliApp.Commands = []*cli.Command{
-		cmdWeb(ctx),
-		cmdCron(ctx),
-		cmdRpc(ctx),
+		cmdWEB(ctx),
+		cmdCRON(ctx),
+		cmdRPC(ctx),
 		cmdWS(ctx),
 	}
 
@@ -74,7 +74,7 @@ func cmdWS(ctx context.Context) *cli.Command {
 
 }
 
-func cmdRpc(ctx context.Context) *cli.Command {
+func cmdRPC(ctx context.Context) *cli.Command {
 	return &cli.Command{
 		Name:  "rpc",
 		Usage: "Run grpc server group",
@@ -93,7 +93,7 @@ func cmdRpc(ctx context.Context) *cli.Command {
 	}
 }
 
-func cmdCron(ctx context.Context) *cli.Command {
+func cmdCRON(ctx context.Context) *cli.Command {
 	return &cli.Command{
 		Name:  "cron",
 		Usage: "Run cron server group",
@@ -114,7 +114,7 @@ func cmdCron(ctx context.Context) *cli.Command {
 	}
 }
 
-func cmdWeb(ctx context.Context) *cli.Command {
+func cmdWEB(ctx context.Context) *cli.Command {
 	return &cli.Command{
 		Name:  "web",
 		Usage: "Run http server group",
