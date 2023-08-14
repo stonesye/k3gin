@@ -53,13 +53,14 @@ func Run(ctx context.Context, opts ...func(*options)) error {
 	// 初始化要用的各类组件
 
 	// 初始化websocket
-	InitWebsocket(ctx, handler)
-
+	InitWebsocket(ctx, nil)
 	// 处理优雅退出
-	waitGraceExit(ctx)
+	stat := waitGraceExit(ctx)
 
-	logger.WithContext(ctx).Info("Websocket will been stop ...")
+	logger.WithContext(ctx).Info("Websocket server exit !")
 	cleanFunc()
+	time.Sleep(time.Second)
+	os.Exit(stat)
 	return nil
 }
 
