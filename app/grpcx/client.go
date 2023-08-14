@@ -77,6 +77,10 @@ func WithHostOverride(hostOverride string) func(*ClientRPC) {
 	}
 }
 
+/*
+TODO 改成可变变量来NewClient
+*/
+
 func NewClientRPC(client *ClientRPC) (*grpc.ClientConn, func(), error) {
 	var opts []grpc.DialOption
 	if client.TLS {

@@ -43,10 +43,14 @@ func Run(ctx context.Context, opts ...func(*options)) error {
 	config.MustLoad(o.configFile)
 	config.PrintWithJSON()
 
+	logger.WithContext(ctx).Printf("Start #Websocket#, #run_mode %s, #pid %d, #version %s", config.C.RunMode, os.Getpid(), o.version)
+
 	cleanFunc, err := logger.InitLogger()
 	if err != nil {
 		return err
 	}
+
+	// 初始化要用的各类组件
 
 	// 初始化websocket
 	InitWebsocket(ctx, handler)
@@ -114,15 +118,4 @@ func waitGraceExit(ctx context.Context) (stat int) {
 			return
 		}
 	}
-}
-
-type WS struct {
-}
-
-func (w *WS) ServerHTTP(resp http.ResponseWriter, req *http.Request) {
-
-}
-
-func (w *WS) AddPath(path string) {
-
 }
