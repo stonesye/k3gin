@@ -3,19 +3,13 @@ package ws_middleware
 import (
 	"bytes"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"io/ioutil"
+	"k3gin/app/ws/ws_context"
 	"runtime"
 )
 
-func RecoveryMiddleware() func(*gin.Context) {
-	return func(ctx *gin.Context) {
-
-		defer func() {
-			if r := recover(); r != nil {
-
-			}
-		}()
+func RecoveryMiddleware() func(*ws_context.WSContext) {
+	return func(ctx *ws_context.WSContext) {
 
 	}
 }
