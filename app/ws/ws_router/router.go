@@ -54,6 +54,7 @@ func WithWSContext(handler func(*ws_context.WSContext)) func(*gin.Context) {
 			return
 		}
 
+		// 处理异常超时
 		go func() {
 			handler(wscontext)
 		}()

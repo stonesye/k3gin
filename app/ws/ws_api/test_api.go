@@ -1,7 +1,22 @@
 package ws_api
 
-import "k3gin/app/ws/ws_context"
+import (
+	"gorm.io/gorm"
+	"k3gin/app/cache/redisx"
+	"k3gin/app/httpx"
+	"k3gin/app/ws/ws_context"
+)
 
-func TestApi(ctx *ws_context.WSContext) {
+/**
+测试websocket
+*/
+
+type Test struct {
+	db         *gorm.DB
+	httpClient *httpx.Client
+	redis      *redisx.Store
+}
+
+func (t *Test) TestApi(ctx *ws_context.WSContext) {
 
 }
