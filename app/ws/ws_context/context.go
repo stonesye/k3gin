@@ -3,17 +3,13 @@ package ws_context
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 type WSContext struct {
 	context.Context
 	GinCtx *gin.Context
 	KV     map[string]interface{}
-}
-
-type IWSContext interface {
-	Set(interface{}, interface{})
-	Get(interface{}) interface{}
 }
 
 type (
@@ -80,4 +76,22 @@ func FromTrace(ctx context.Context) (string, bool) {
 		return s, s != ""
 	}
 	return "", false
+}
+
+func WithFields(ctx context.Context) *logrus.Entry {
+	fields := logrus.Fields{}
+
+	if s, b := FromTag(ctx); b == true && s != "" {
+		fields["tag"] = s
+	}
+
+	if s, b := FromTrace(ctx); b == true && s != "" {
+		fields["trace"] = s
+	}
+
+	if s, b := FromStack(ctx); b == true && s != "" {
+		fields["stack"] = s
+	}
+
+	return logrus.WithContext(ctx).WithFields(fields)
 }
