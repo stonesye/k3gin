@@ -15,6 +15,7 @@ type IRouter interface {
 }
 
 type WSRouter struct {
+	ws_api.Test
 }
 
 var upgrade = websocket.Upgrader{
@@ -31,7 +32,7 @@ func (w *WSRouter) Register(engine *gin.Engine) error {
 	{
 		v1 := g.Group("/v1")
 		{
-			v1.GET("", WithWSContext(ws_api.TestApi))
+			v1.GET("", WithWSContext(w.Test.TestApi))
 		}
 	}
 
