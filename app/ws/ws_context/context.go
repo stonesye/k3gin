@@ -3,7 +3,6 @@ package ws_context
 import (
 	"context"
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 )
 
 type WSContext struct {
@@ -57,13 +56,13 @@ func NewStack(ctx context.Context, stack string) context.Context {
 	return context.WithValue(ctx, stackCTX{}, stack)
 }
 
-func FromStack(ctx context.Context) (string, bool) {
+func FromStack(ctx context.Context) error {
 	v := ctx.Value(stackCTX{})
-	if s, ok := v.(string); ok {
-		return s, s != ""
+	if s, ok := v.(error); ok {
+		return s
 	}
 
-	return "", false
+	return nil
 }
 
 func NewTrace(ctx context.Context, trace string) context.Context {
@@ -76,22 +75,4 @@ func FromTrace(ctx context.Context) (string, bool) {
 		return s, s != ""
 	}
 	return "", false
-}
-
-func WithFields(ctx context.Context) *logrus.Entry {
-	fields := logrus.Fields{}
-
-	if s, b := FromTag(ctx); b == true && s != "" {
-		fields["tag"] = s
-	}
-
-	if s, b := FromTrace(ctx); b == true && s != "" {
-		fields["trace"] = s
-	}
-
-	if s, b := FromStack(ctx); b == true && s != "" {
-		fields["stack"] = s
-	}
-
-	return logrus.WithContext(ctx).WithFields(fields)
 }

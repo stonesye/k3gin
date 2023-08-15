@@ -22,8 +22,8 @@ func RecoveryMiddleware() gin.HandlerFunc {
 				stack := stack(3)
 
 				c := ctx.Request.Context()
-				entry := logger.WithContext(contextx.NewTag(c, "__recover__"))
-				entry.WithField(logger.StackKey, string(stack)).Errorf("[panic] %v", err)
+				entry := logger.WithFieldsFromContext(contextx.NewTag(c, "__recover__"))
+				entry.WithField(logger.STACK, string(stack)).Errorf("[panic] %v", err)
 				ginx.ResError(ctx, errors.ErrInternalServer, http.StatusOK)
 			}
 		}()

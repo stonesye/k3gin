@@ -57,7 +57,7 @@ EXIT:
 	select {
 	case sig := <-sc:
 		// 打印 signal chan接收到的信号
-		logger.WithContext(ctx).Infof("Receive signal[%s]", sig.String())
+		logger.WithFieldsFromContext(ctx).Infof("Receive signal[%s]", sig.String())
 		switch sig {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
 			// 如果接收到的信号是以上信号，忽略钓, 重新接收信号
@@ -73,7 +73,7 @@ EXIT:
 
 	// 清理程序，并退出
 	cleanFunc()
-	logger.WithContext(ctx).Info("Server exit !")
+	logger.WithFieldsFromContext(ctx).Info("Server exit !")
 	time.Sleep(time.Second)
 	os.Exit(state)
 	return nil
@@ -100,7 +100,7 @@ func Init(ctx context.Context, opts ...func(*options)) (func(), error) {
 	config.PrintWithJSON()
 
 	// 利用默认的logrus来打印日志, 并没有利用到定制化的logrus, 因为还没有调用InitLogger
-	logger.WithContext(ctx).Printf("Start #WEB# server,#run_mode %s,#pid %d,#version: %s", config.C.RunMode, os.Getpid(), o.Version)
+	logger.WithFieldsFromContext(ctx).Printf("Start #WEB# server,#run_mode %s,#pid %d,#version: %s", config.C.RunMode, os.Getpid(), o.Version)
 
 	// 初始化logrus 定制化日志
 	loggerCleanFunc, err := logger.InitLogger()
@@ -139,7 +139,7 @@ func InitHttpServer(ctx context.Context, handler http.Handler) func() {
 	}
 
 	go func() {
-		logger.WithContext(ctx).Printf("HTTP server is running at %s.", addr)
+		logger.WithFieldsFromContext(ctx).Printf("HTTP server is running at %s.", addr)
 
 		var err error
 
@@ -164,7 +164,7 @@ func InitHttpServer(ctx context.Context, handler http.Handler) func() {
 		srv.SetKeepAlivesEnabled(false)
 		// 关闭HTTPServer服务, 设置了timeout context  一旦时间到了就会执行ctx.Done()
 		if err := srv.Shutdown(ctx); err != nil {
-			logger.WithContext(ctx).Errorf(err.Error())
+			logger.WithFieldsFromContext(ctx).Errorf(err.Error())
 		}
 	}
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"k3gin/app/config"
 	"k3gin/app/contextx"
+	"k3gin/app/ws/ws_context"
 	"os"
 	"path/filepath"
 	"time"
@@ -32,33 +33,45 @@ func SetFormatter(format string) {
 
 // 作为logrus中的KEY
 const (
-	TraceIDKey = "trace_id"
-	UserIDKey  = "user_id"
-	TagKey     = "tag"
-	StackKey   = "stack"
+	TRACE = "trace_id"
+	TAG   = "tag"
+	STACK = "stack"
 )
 
-// WithContext 从ctx中把数据拿出来，封装成logrus的Fields, 这样后面再用logrus记录日志的时候，就会自动带上封装后的数据
-func WithContext(ctx context.Context) *Entry {
+// WithContextFromContext 从ctx中把数据拿出来，封装成logrus的Fields, 这样后面再用logrus记录日志的时候，就会自动带上封装后的数据
+func WithFieldsFromContext(ctx context.Context) *logrus.Entry {
 	fields := logrus.Fields{}
 
 	if v, e := contextx.FromTarceID(ctx); v != "" && e == true {
-		fields[TraceIDKey] = v
-	}
-
-	if v := contextx.FromUserID(ctx); v != 0 {
-		fields[UserIDKey] = v
+		fields[TRACE] = v
 	}
 
 	if v, e := contextx.FromTag(ctx); v != "" && e == true {
-		fields[TagKey] = v
+		fields[TAG] = v
 	}
-
 	if v := contextx.FromStack(ctx); v != nil {
-		fields[StackKey] = fmt.Sprintf("%+v", v)
+		fields[STACK] = fmt.Sprintf("%+v", v)
 	}
 
 	// 把上下文附带的给到logrus，以防万一后面要用
+	return logrus.WithContext(ctx).WithFields(fields)
+}
+
+func WithFieldsFromWSContext(ctx context.Context) *logrus.Entry {
+	fields := logrus.Fields{}
+
+	if s, b := ws_context.FromTag(ctx); b == true && s != "" {
+		fields[TAG] = s
+	}
+
+	if s, b := ws_context.FromTrace(ctx); b == true && s != "" {
+		fields[TRACE] = s
+	}
+
+	if s := ws_context.FromStack(ctx); s != nil {
+		fields[STACK] = fmt.Sprintf("%+v", s)
+	}
+
 	return logrus.WithContext(ctx).WithFields(fields)
 }
 
