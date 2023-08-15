@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"k3gin/app/logger"
 	"k3gin/app/ws/ws_context"
 	"runtime"
 )
@@ -11,6 +12,17 @@ import (
 func RecoveryMiddleware() func(*ws_context.WSContext) {
 	return func(ctx *ws_context.WSContext) {
 
+		defer func() {
+			if r := recover(); r != nil {
+				stack := stack(3)
+				logger.WithFieldsFromWSContext(ws_context.NewTag(ctx, "__ws_recover__")).WithField(logger.STACK, string(stack)).Errorf("panic : %+v", r)
+			}
+
+			// TODO 处理返回信息
+			return
+		}()
+
+		ctx.GinCtx.Next()
 	}
 }
 

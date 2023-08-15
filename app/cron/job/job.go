@@ -25,7 +25,7 @@ func RecoverGlobalJob() func(ctx *croncontext.Context) {
 		defer func() {
 			if err := recover(); err != nil {
 				stack := stack(3)
-				logger.WithContext(ctx).Errorf("Cron painc err: %s", stack)
+				logger.WithFieldsFromContext(ctx).Errorf("Cron painc err: %s", stack)
 			}
 		}()
 		ctx.Next()

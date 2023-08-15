@@ -52,7 +52,7 @@ func FromTag(ctx context.Context) (string, bool) {
 	return "", false
 }
 
-func NewStack(ctx context.Context, stack string) context.Context {
+func NewStack(ctx context.Context, stack error) context.Context {
 	return context.WithValue(ctx, stackCTX{}, stack)
 }
 
