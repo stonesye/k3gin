@@ -20,6 +20,7 @@ func BuildInjector() (*Injector, func(), error) {
 		ws_api.TestApiSet,
 		ws_router.WSRouterSet,
 		initGinEngine,
-		InjectorSet)
+		InjectorSet,
+	)
 	return new(Injector), nil, nil
 }

@@ -8,9 +8,9 @@ import (
 
 type WSContext struct {
 	context.Context
-	GinCtx *gin.Context
-	KV     map[string]interface{}
-	Conn   *websocket.Conn
+	GinCtx   *gin.Context
+	KV       map[string]interface{}
+	Upgrader *websocket.Upgrader
 }
 
 type (

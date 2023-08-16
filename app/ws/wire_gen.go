@@ -17,7 +17,6 @@ import (
 // Injectors from wire.go:
 
 func BuildInjector() (*Injector, func(), error) {
-	upgrader := ws_router.InitUpgrader()
 	db, cleanup, err := gormx.InitGormDB()
 	if err != nil {
 		return nil, nil, err
@@ -39,8 +38,7 @@ func BuildInjector() (*Injector, func(), error) {
 		Redis:      store,
 	}
 	wsRouter := &ws_router.WSRouter{
-		Upgrader: upgrader,
-		Test:     test,
+		Test: test,
 	}
 	engine := initGinEngine(wsRouter)
 	injector := &Injector{
