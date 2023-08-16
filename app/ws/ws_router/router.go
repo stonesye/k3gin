@@ -49,7 +49,7 @@ func WithWSContext(handler func(*ws_context.WSContext)) func(*gin.Context) {
 		ws, err := upgrade.Upgrade(c.Writer, c.Request, nil)
 		if err != nil {
 			if _, ok := err.(websocket.HandshakeError); !ok {
-				logger.WithContext(c).Errorf("Websocket err : %v", err)
+				logger.WithFieldsFromWSContext(c).Errorf("Websocket err : %v", err)
 			}
 
 			return
