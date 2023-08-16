@@ -34,7 +34,7 @@ func StreamServerInterceptor(opt ...func(*options)) grpc.StreamServerInterceptor
 
 		defer func() {
 			if r := recover(); r != nil {
-				logger.WithContext(context.TODO()).WithField(logger.StackKey, string(stack(3))).Errorf("[GRPC-Panic] : %v", r)
+				logger.WithFieldsFromContext(context.TODO()).WithField(logger.STACK, string(stack(3))).Errorf("[GRPC-Panic] : %v", r)
 				err = packRecoverMessage(ss.Context(), r, o.recoveryHandlerFunc)
 			}
 		}()

@@ -80,7 +80,7 @@ func initGRPCServer(ctx context.Context, registers ...func(*grpc.Server)) func()
 	lis, err := net.Listen("tcp", addr)
 
 	if err != nil {
-		logger.WithContext(ctx).Fatalf("failed to listen: %v", err)
+		logger.WithFieldsFromContext(ctx).Fatalf("failed to listen: %v", err)
 	}
 
 	go func() {
@@ -90,19 +90,19 @@ func initGRPCServer(ctx context.Context, registers ...func(*grpc.Server)) func()
 		if cfg.CertFile != "" && cfg.KeyFile != "" {
 			creds, err := credentials.NewServerTLSFromFile(cfg.CertFile, cfg.KeyFile)
 			if err != nil {
-				logger.WithContext(ctx).Fatalf("fialed to generate credentials : %v", err)
+				logger.WithFieldsFromContext(ctx).Fatalf("fialed to generate credentials : %v", err)
 			}
 			opts = []grpc.ServerOption{grpc.Creds(creds)}
 		}
 
 		// stream 和 常规 recovery拦截
 		opts = append(opts, grpc.ChainUnaryInterceptor(recovery.UnaryServerInterceptor(recovery.WithRecoveryHandler(func(i interface{}) error {
-			logger.WithContext(ctx).WithField("stack", "").Errorf("panic error: %v", i)
+			logger.WithFieldsFromContext(ctx).WithField("stack", "").Errorf("panic error: %v", i)
 			return status.Errorf(codes.Unknown, "GRPC :%v", i)
 		}))))
 
 		opts = append(opts, grpc.ChainStreamInterceptor(recovery.StreamServerInterceptor(recovery.WithRecoveryHandler(func(i interface{}) error {
-			logger.WithContext(ctx).WithField("stack", "").Errorf("panic error: %v", i)
+			logger.WithFieldsFromContext(ctx).WithField("stack", "").Errorf("panic error: %v", i)
 			return status.Errorf(codes.Unknown, "GRPC-Stream :%v", i)
 		}))))
 
@@ -114,12 +114,12 @@ func initGRPCServer(ctx context.Context, registers ...func(*grpc.Server)) func()
 		}
 
 		if err := serv.Serve(lis); err != nil {
-			logger.WithContext(ctx).Fatalf("failed to server : %v", err)
+			logger.WithFieldsFromContext(ctx).Fatalf("failed to server : %v", err)
 		}
 	}()
 
 	return func() {
-		logger.WithContext(contextx.NewTag(ctx, "__grpc__")).Infof("Stop grpc.server !")
+		logger.WithFieldsFromContext(contextx.NewTag(ctx, "__grpc__")).Infof("Stop grpc.server !")
 		serv.Stop()
 	}
 }
@@ -133,7 +133,7 @@ func Run(ctx context.Context, opts ...func(*options)) error {
 	// 初始化config
 	config.MustLoad(o.ConfigFile)
 	config.PrintWithJSON()
-	logger.WithContext(ctx).Printf("Start #GRPC# server, #run_mode %s,#version %s,#pid %d", config.C.RunMode, o.Version, os.Getpid())
+	logger.WithFieldsFromContext(ctx).Printf("Start #GRPC# server, #run_mode %s,#version %s,#pid %d", config.C.RunMode, o.Version, os.Getpid())
 
 	// 初始化logger
 	logCleanFunc, err := logger.InitLogger()
@@ -149,7 +149,7 @@ func Run(ctx context.Context, opts ...func(*options)) error {
 	// 清理多余的数据
 	logCleanFunc()
 	grpcServerCleanFunc()
-	logger.WithContext(ctx).Info("GRPC server will been exit !")
+	logger.WithFieldsFromContext(ctx).Info("GRPC server will been exit !")
 	os.Exit(stat)
 	return nil
 }

@@ -26,7 +26,7 @@ func InitClientRPC() (*grpc.ClientConn, func(), error) {
 		creds, err := credentials.NewClientTLSFromFile(C.CACert, C.HostOverride)
 
 		if err != nil {
-			logger.WithContext(context.TODO()).Errorf("failed to load credentials: %v", err)
+			logger.WithFieldsFromContext(context.TODO()).Errorf("failed to load credentials: %v", err)
 			return nil, nil, err
 		}
 		opts = append(opts, grpc.WithTransportCredentials(creds))
@@ -37,7 +37,7 @@ func InitClientRPC() (*grpc.ClientConn, func(), error) {
 	conn, err := grpc.Dial(fmt.Sprintf("%s:%s", C.Host, strconv.Itoa(C.Port)), opts...)
 
 	if err != nil {
-		logger.WithContext(context.TODO()).Errorf("failed to dial : %v", err)
+		logger.WithFieldsFromContext(context.TODO()).Errorf("failed to dial : %v", err)
 		return nil, nil, err
 	}
 

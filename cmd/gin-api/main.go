@@ -46,7 +46,7 @@ func main() {
 
 	// 命令行包cli 的Run函数 其实是执行 Commands 下所有的 cli.Command 中的 Action 指定的函数
 	if err := cliApp.Run(os.Args); err != nil {
-		logger.WithContext(ctx).Errorf(err.Error())
+		logger.WithFieldsFromContext(ctx).Errorf(err.Error())
 	}
 }
 

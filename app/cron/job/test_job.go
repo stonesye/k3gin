@@ -38,12 +38,12 @@ func TestGRPC(ctx *context.FrameContext) {
 	})
 
 	if err != nil {
-		logger.WithContext(ctx).Errorf("received error : %v", err)
+		logger.WithFieldsFromContext(ctx).Errorf("received error : %v", err)
 	}
 
 	err = test.CallServerStreamEcho(ctx, client, &test.TestRequest{Message: "RPC stream Testing "})
 	if err != nil {
-		logger.WithContext(ctx).Errorf("received error : %v", err)
+		logger.WithFieldsFromContext(ctx).Errorf("received error : %v", err)
 	}
 
 }

@@ -17,7 +17,7 @@ type TestRealize struct {
 // 下面重写TestInfoServer 的接口函数
 
 func (x *TestRealize) ServerGetTestID(ctx context.Context, test *Test) (*TestID, error) {
-	logger.WithContext(ctx).Infof("Recv client testinfo :%v", test)
+	logger.WithFieldsFromContext(ctx).Infof("Recv client testinfo :%v", test)
 
 	if test.Flag == true {
 		return &TestID{
@@ -34,11 +34,11 @@ func (x *TestRealize) ServerStreamEcho(server TestInfo_ServerStreamEchoServer) e
 			if err == io.EOF { // 数据获取完了
 				return nil
 			}
-			logger.WithContext(context.TODO()).Infof("Receiving message from steam : %v", err)
+			logger.WithFieldsFromContext(context.TODO()).Infof("Receiving message from steam : %v", err)
 			return err
 		}
 
-		logger.WithContext(context.TODO()).Infof("Receiving message : %v", in.Message)
+		logger.WithFieldsFromContext(context.TODO()).Infof("Receiving message : %v", in.Message)
 		err = server.Send(&TestResponse{
 			Message: in.Message,
 		})
@@ -55,7 +55,7 @@ func CallServerGetTestID(ctx context.Context, client TestInfoClient, test *Test,
 		return status.Errorf(status.Code(err), "ServerGetTestID RPC failed : %v", err)
 	}
 
-	logger.WithContext(ctx).Infof("ServerGetTestID: %v", id)
+	logger.WithFieldsFromContext(ctx).Infof("ServerGetTestID: %v", id)
 
 	return nil
 }

@@ -65,9 +65,9 @@ func ResError(c *gin.Context, err error, httpStatus ...int) {
 	if err := res.ERR; err != nil {
 		// 将err信息用日志记录下来
 		if status := res.Status; status >= 400 && status < 500 {
-			logger.WithContext(c).Warnf(err.Error())
+			logger.WithFieldsFromContext(c).Warnf(err.Error())
 		} else if status >= 500 {
-			logger.WithContext(contextx.NewStack(c, err)).Errorf(err.Error())
+			logger.WithFieldsFromContext(contextx.NewStack(c, err)).Errorf(err.Error())
 		}
 	}
 

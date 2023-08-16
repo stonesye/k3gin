@@ -55,14 +55,14 @@ func (cron *Cron) waitGraceExit(ctx context.Context) int {
 	// 创建新号源， 控制cron的运行， 确保只有接触到特殊的信号以后， 主协程才会退出，子协程才会被回收
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGINT, syscall.SIGTERM)
-	logger.WithContext(ctx).Info("Waiting signal exiting cron ... ")
+	logger.WithFieldsFromContext(ctx).Info("Waiting signal exiting cron ... ")
 
 	for {
 
 		s := <-sig
 		switch s {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
-			logger.WithContext(ctx).Infof("Received signal : %s, cron server exiting ...", s.String())
+			logger.WithFieldsFromContext(ctx).Infof("Received signal : %s, cron server exiting ...", s.String())
 
 			select {
 			case <-time.NewTimer(time.Duration(config.C.Cron.WaitGraceExit) * time.Millisecond).C: // 最多等待的时间
@@ -132,7 +132,7 @@ func Run(ctx context.Context, opts ...Option) error {
 	}
 	config.MustLoad(o.conf)
 	config.PrintWithJSON()
-	logger.WithContext(ctx).Printf("Start #CRON# server, #run_mode %s,#version %s,#pid %d", config.C.RunMode, o.version, os.Getpid())
+	logger.WithFieldsFromContext(ctx).Printf("Start #CRON# server, #run_mode %s,#version %s,#pid %d", config.C.RunMode, o.version, os.Getpid())
 
 	// 初始化 logrus
 	loggerCleanFunc, err := logger.InitLogger()
@@ -158,7 +158,7 @@ func Run(ctx context.Context, opts ...Option) error {
 	// # 清理垃圾信息
 	loggerCleanFunc()
 	cleanFunc()
-	logger.WithContext(ctx).Info("Cron Server exited !")
+	logger.WithFieldsFromContext(ctx).Info("Cron Server exited !")
 	time.Sleep(time.Duration(1000) * time.Millisecond)
 	os.Exit(stat)
 	return nil
