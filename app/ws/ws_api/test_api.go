@@ -38,13 +38,22 @@ func (t *Test) TestApi(ctx *ws_context.WSContext) {
 
 func (t *Test) write(ctx *ws_context.WSContext, conn *websocket.Conn) {
 
+	defer func() {
+		conn.Close()
+	}()
+
 	go func() {
 
 	}()
 }
 
 func (t *Test) read(ctx *ws_context.WSContext, conn *websocket.Conn) {
-	for {
+	defer conn.Close()
 
+	for {
+		_, _, err := conn.ReadMessage()
+		if err != nil {
+			break
+		}
 	}
 }
