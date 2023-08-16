@@ -3,12 +3,14 @@ package ws_context
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 )
 
 type WSContext struct {
 	context.Context
 	GinCtx *gin.Context
 	KV     map[string]interface{}
+	Conn   *websocket.Conn
 }
 
 type (
