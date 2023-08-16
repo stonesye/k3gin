@@ -43,7 +43,7 @@ func Run(ctx context.Context, opts ...func(*options)) error {
 	config.MustLoad(o.configFile)
 	config.PrintWithJSON()
 
-	logger.WithContext(ctx).Printf("Start #Websocket#, #run_mode %s, #pid %d, #version %s", config.C.RunMode, os.Getpid(), o.version)
+	logger.WithFieldsFromWSContext(ctx).Printf("Start #Websocket#, #run_mode %s, #pid %d, #version %s", config.C.RunMode, os.Getpid(), o.version)
 
 	cleanFunc, err := logger.InitLogger()
 	if err != nil {
@@ -57,7 +57,7 @@ func Run(ctx context.Context, opts ...func(*options)) error {
 	// 处理优雅退出
 	stat := waitGraceExit(ctx)
 
-	logger.WithContext(ctx).Info("Websocket server exit !")
+	logger.WithFieldsFromWSContext(ctx).Info("Websocket server exit !")
 	cleanFunc()
 	time.Sleep(time.Second)
 	os.Exit(stat)
@@ -94,7 +94,7 @@ func InitWebsocket(ctx context.Context, handler http.Handler) (cleanFunc func())
 		ctx, cancel := context.WithTimeout(ctx, time.Duration(C.ShutdownTimeout)*time.Second)
 		defer cancel()
 		if err := srv.Shutdown(ctx); err != nil {
-			logger.WithContext(ctx).Errorf("Websocket shutdown err : %v", err.Error())
+			logger.WithFieldsFromWSContext(ctx).Errorf("Websocket shutdown err : %v", err.Error())
 		}
 	}
 	return
