@@ -23,7 +23,6 @@ type Test struct {
 var TestApiSet = wire.NewSet(wire.Struct(new(Test), "*"), wire.Bind(new(ApiInterface), new(*Test)))
 
 func (t *Test) TestApi(ctx *ws_context.WSContext) {
-	// fmt.Println(t.DB, t.HttpClient, t.Redis)
 	conn, err := ctx.Upgrader.Upgrade(ctx.GinCtx.Writer, ctx.GinCtx.Request, nil)
 	if err != nil {
 		if _, ok := err.(websocket.HandshakeError); !ok {
