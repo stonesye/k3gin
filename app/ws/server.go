@@ -60,7 +60,7 @@ func Run(ctx context.Context, opts ...func(*options)) error {
 	}
 
 	// 初始化websocket
-	wsCleanFunc := InitWebsocket(ctx, injector.Engine)
+	wsCleanFunc := initWebsocket(ctx, injector.Engine)
 	// 处理优雅退出
 	stat := waitGraceExit(ctx)
 
@@ -89,7 +89,7 @@ func initGinEngine(r ws_router.IRouter) *gin.Engine {
 	return app
 }
 
-func InitWebsocket(ctx context.Context, handler http.Handler) (cleanFunc func()) {
+func initWebsocket(ctx context.Context, handler http.Handler) (cleanFunc func()) {
 
 	var C = config.C.WebSocket
 
