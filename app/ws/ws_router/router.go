@@ -103,6 +103,7 @@ func (proxy *WSProxy) Write(p []byte) (n int, err error) {
 }
 
 func (proxy *WSProxy) Copy(writer io.Writer, reader io.Reader) (int64, error) {
+	// 一次性读取4096  字节
 	buf := make([]byte, 4096)
 
 	var written int64 = 0
@@ -115,7 +116,6 @@ func (proxy *WSProxy) Copy(writer io.Writer, reader io.Reader) (int64, error) {
 		if n == 0 {
 			return written, nil
 		}
-
 		written += int64(n)
 		m, err := writer.Write(buf[:n])
 		if err != nil {
@@ -126,5 +126,4 @@ func (proxy *WSProxy) Copy(writer io.Writer, reader io.Reader) (int64, error) {
 			return written, io.ErrShortWrite
 		}
 	}
-
 }
