@@ -7,7 +7,7 @@ import (
 	"k3gin/app/httpx"
 	"k3gin/app/logger"
 	"k3gin/app/ws/ws_context"
-	"k3gin/app/ws/ws_router"
+	"k3gin/app/ws/ws_proxy"
 )
 
 /**
@@ -23,7 +23,7 @@ type Test struct {
 var TestApiSet = wire.NewSet(wire.Struct(new(Test), "*"))
 
 func (t *Test) TestApi(ctx *ws_context.WSContext) {
-	ws, cleanFunc, err := ws_router.NewWebsocketConnect(ctx)
+	ws, cleanFunc, err := ws_proxy.NewWebsocketConnect(ctx)
 	if err != nil {
 		return
 	}
@@ -38,6 +38,8 @@ func (t *Test) TestApi(ctx *ws_context.WSContext) {
 			logger.WithFieldsFromWSContext(ctx).Errorf("Read message err[%v] : %v", n, err)
 			break
 		}
+
+		logger.WithFieldsFromWSContext(ctx).Infof("Read message from client : %v", string(p))
 
 		n, err = ws.Write(p)
 		if err != nil {
