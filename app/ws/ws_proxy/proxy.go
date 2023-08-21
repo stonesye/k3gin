@@ -34,57 +34,16 @@ func NewWebsocketConnect(ctx *ws_context.WSContext) (*WSProxy, func(), error) {
 }
 
 func (proxy *WSProxy) Read(p []byte) (n int, err error) {
-
-	msg := make([]byte, 1024)
-
-	proxy.wsType, msg, err = proxy.ws.ReadMessage()
-
-	if err != nil {
-		if err != io.EOF {
-			logger.WithFieldsFromWSContext(proxy.ctx).Errorf("Read message error: %v", err)
-		}
-		return 0, err
-	}
-
-	for i, v := range msg {
-		p[i] = v
-	}
-	return len(p), err
+	msgType, nr, _ := proxy.ws.NextReader()
+	proxy.wsType = msgType
+	return nr.Read(p)
 }
 
 func (proxy *WSProxy) Write(p []byte) (n int, err error) {
-	err = proxy.ws.WriteMessage(proxy.wsType, p)
-	if err != nil {
-		if err != io.EOF {
-			logger.WithFieldsFromWSContext(proxy.ctx).Errorf("Writer message error: %v", err)
-		}
-		return 0, err
-	}
-	return len(p), err
+	rw, _ := proxy.ws.NextWriter(proxy.wsType)
+	return rw.Write(p)
 }
 
 func (proxy *WSProxy) Copy(writer io.Writer, reader io.Reader) (int64, error) {
-	// 一次性读取4096  字节
-	buf := make([]byte, 4096)
-
-	var written int64 = 0
-
-	for {
-		n, err := reader.Read(buf)
-		if err != nil && err != io.EOF {
-			return 0, err
-		}
-		if n == 0 {
-			return written, nil
-		}
-		written += int64(n)
-		m, err := writer.Write(buf[:n])
-		if err != nil {
-			return written, err
-		}
-
-		if m > n {
-			return written, io.ErrShortWrite
-		}
-	}
+	return io.Copy(writer, reader)
 }
