@@ -40,12 +40,11 @@ func (t *Test) TestApi(ctx *ws_context.WSContext) {
 		}
 
 		logger.WithFieldsFromWSContext(ctx).Infof("Read message from client : %v", string(p))
-
-		n, err = ws.Write(p)
+		msg := "hello world"
+		n, err = ws.Write([]byte(msg))
 		if err != nil {
 			logger.WithFieldsFromWSContext(ctx).Errorf("Recv message err[%v] : %v", n, err)
 			break
 		}
 	}
-
 }
