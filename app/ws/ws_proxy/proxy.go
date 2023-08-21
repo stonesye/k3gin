@@ -14,9 +14,8 @@ type IWSProxy interface {
 }
 
 type WSProxy struct {
-	ctx    *ws_context.WSContext
-	ws     *websocket.Conn
-	wsType int
+	ctx *ws_context.WSContext
+	ws  *websocket.Conn
 }
 
 func NewWebsocketConnect(ctx *ws_context.WSContext) (*WSProxy, func(), error) {
@@ -34,13 +33,13 @@ func NewWebsocketConnect(ctx *ws_context.WSContext) (*WSProxy, func(), error) {
 }
 
 func (proxy *WSProxy) Read(p []byte) (n int, err error) {
-	msgType, nr, _ := proxy.ws.NextReader()
-	proxy.wsType = msgType
+	_, nr, err := proxy.ws.NextReader()
 	return nr.Read(p)
 }
 
 func (proxy *WSProxy) Write(p []byte) (n int, err error) {
-	rw, _ := proxy.ws.NextWriter(proxy.wsType)
+	rw, _ := proxy.ws.NextWriter(websocket.TextMessage)
+	defer rw.Close()
 	return rw.Write(p)
 }
 

@@ -5,7 +5,6 @@ import (
 	"k3gin/app/cache/redisx"
 	"k3gin/app/gormx"
 	"k3gin/app/httpx"
-	"k3gin/app/logger"
 	"k3gin/app/ws/ws_context"
 	"k3gin/app/ws/ws_proxy"
 )
@@ -27,24 +26,6 @@ func (t *Test) TestApi(ctx *ws_context.WSContext) {
 	if err != nil {
 		return
 	}
-
 	defer cleanFunc()
 
-	var p = make([]byte, 1024)
-
-	for {
-		n, err := ws.Read(p)
-		if err != nil {
-			logger.WithFieldsFromWSContext(ctx).Errorf("Read message err[%v] : %v", n, err)
-			break
-		}
-
-		logger.WithFieldsFromWSContext(ctx).Infof("Read message from client : %v", string(p))
-		msg := "hello world"
-		n, err = ws.Write([]byte(msg))
-		if err != nil {
-			logger.WithFieldsFromWSContext(ctx).Errorf("Recv message err[%v] : %v", n, err)
-			break
-		}
-	}
 }

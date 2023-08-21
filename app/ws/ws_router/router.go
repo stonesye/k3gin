@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
 	"github.com/gorilla/websocket"
+	"k3gin/app/logger"
 	"k3gin/app/ws/ws_api"
 	"k3gin/app/ws/ws_context"
 	"net/http"
@@ -44,6 +45,9 @@ func WithWSContext(handler func(*ws_context.WSContext)) func(*gin.Context) {
 				WriteBufferSize: 1024,
 				CheckOrigin: func(r *http.Request) bool {
 					return true
+				},
+				Error: func(w http.ResponseWriter, r *http.Request, status int, reason error) {
+					logger.WithFieldsFromContext(c).Errorf("Websocket #url: %v# #status %v# error : %v; ", r.URL, status, reason)
 				},
 			},
 			KV: make(map[string]interface{}),
