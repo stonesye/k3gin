@@ -51,14 +51,13 @@ func (t *Test) TestApi(ctx *ws_context.WSContext) {
 			}
 			hbTicker.Reset(hbTime)
 		}
+
 	}()
 
-EXIT:
 	for {
 		select {
 		case <-hbTicker.C:
 			ws.Write([]byte("链接长时间没有信息，已关闭."))
-			break EXIT
 		}
 	}
 
