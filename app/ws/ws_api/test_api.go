@@ -51,7 +51,6 @@ func (t *Test) TestApi(ctx *ws_context.WSContext) {
 			}
 			hbTicker.Reset(hbTime)
 		}
-
 	}()
 
 	for {
